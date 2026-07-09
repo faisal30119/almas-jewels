@@ -1,0 +1,202 @@
+import { useState, useMemo } from 'react';
+import { motion } from 'motion/react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Filter } from 'lucide-react';
+import { products, categories, stoneColors, platings, priceRanges } from '../data';
+import { cn } from '../lib/utils';
+
+export default function Shop() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const activeCategory = searchParams.get('category');
+  const activeStone = searchParams.get('stone');
+  const activePlating = searchParams.get('plating');
+  const activePriceRange = searchParams.get('price');
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      if (activeCategory && p.category !== activeCategory) return false;
+      if (activeStone && p.stoneColor !== activeStone) return false;
+      if (activePlating && p.plating !== activePlating) return false;
+      if (activePriceRange) {
+        const range = priceRanges.find(r => r.label === activePriceRange);
+        if (range) {
+          if (p.price < range.min || p.price > range.max) return false;
+        }
+      }
+      return true;
+    });
+  }, [activeCategory, activeStone, activePlating, activePriceRange]);
+
+  const updateFilter = (key: string, value: string | null) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set(key, value);
+    } else {
+      newParams.delete(key);
+    }
+    setSearchParams(newParams);
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  return (
+    <div className="pt-32 pb-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-5xl font-serif text-emerald-950 mb-4">The Collection</h1>
+        <div className="w-16 h-0.5 bg-gold-500 mx-auto mb-6"></div>
+        <p className="text-gray-500 font-light max-w-2xl mx-auto">
+          Explore our complete range of meticulously crafted artificial bridal jewelry.
+        </p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-12">
+        {/* Mobile Filter Toggle */}
+        <button 
+          className="lg:hidden flex items-center gap-2 text-emerald-950 font-medium uppercase tracking-widest text-sm border-b border-emerald-950/20 pb-2 w-max"
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+        >
+          <Filter className="w-4 h-4" /> Filters
+        </button>
+
+        {/* Filters Sidebar */}
+        <aside className={cn(
+          "lg:w-64 flex-shrink-0 transition-all duration-300 overflow-hidden",
+          isFilterOpen ? "max-h-screen" : "max-h-0 lg:max-h-full"
+        )}>
+          <div className="space-y-10">
+            {/* Category Filter */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-950 mb-4">Type</h3>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => updateFilter('category', null)}
+                  className={cn("block text-sm font-light text-left transition-colors", !activeCategory ? "text-gold-600 font-medium" : "text-gray-500 hover:text-emerald-950")}
+                >
+                  All Types
+                </button>
+                {categories.map(c => (
+                  <button 
+                    key={c}
+                    onClick={() => updateFilter('category', c)}
+                    className={cn("block text-sm font-light text-left transition-colors", activeCategory === c ? "text-gold-600 font-medium" : "text-gray-500 hover:text-emerald-950")}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Stone Color Filter */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-950 mb-4">Color</h3>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => updateFilter('stone', null)}
+                  className={cn("block text-sm font-light text-left transition-colors", !activeStone ? "text-gold-600 font-medium" : "text-gray-500 hover:text-emerald-950")}
+                >
+                  All Colors
+                </button>
+                {stoneColors.map(c => (
+                  <button 
+                    key={c}
+                    onClick={() => updateFilter('stone', c)}
+                    className={cn("block text-sm font-light text-left transition-colors", activeStone === c ? "text-gold-600 font-medium" : "text-gray-500 hover:text-emerald-950")}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Range Filter */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-950 mb-4">Price Range</h3>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => updateFilter('price', null)}
+                  className={cn("block text-sm font-light text-left transition-colors", !activePriceRange ? "text-gold-600 font-medium" : "text-gray-500 hover:text-emerald-950")}
+                >
+                  All Prices
+                </button>
+                {priceRanges.map(pr => (
+                  <button 
+                    key={pr.label}
+                    onClick={() => updateFilter('price', pr.label)}
+                    className={cn("block text-sm font-light text-left transition-colors", activePriceRange === pr.label ? "text-gold-600 font-medium" : "text-gray-500 hover:text-emerald-950")}
+                  >
+                    {pr.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Plating Filter */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-950 mb-4">Plating</h3>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => updateFilter('plating', null)}
+                  className={cn("block text-sm font-light text-left transition-colors", !activePlating ? "text-gold-600 font-medium" : "text-gray-500 hover:text-emerald-950")}
+                >
+                  All Platings
+                </button>
+                {platings.map(p => (
+                  <button 
+                    key={p}
+                    onClick={() => updateFilter('plating', p)}
+                    className={cn("block text-sm font-light text-left transition-colors", activePlating === p ? "text-gold-600 font-medium" : "text-gray-500 hover:text-emerald-950")}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Product Grid */}
+        <div className="flex-1">
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-20 text-gray-500 font-light">
+              No products found matching your criteria.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-12">
+              {filteredProducts.map((product, idx) => (
+                <motion.div 
+                  key={product.id}
+                  initial="hidden"
+                  animate="visible"
+                  variants={fadeInUp}
+                  transition={{ delay: idx * 0.1 }}
+                  className="group"
+                >
+                  <Link to={`/product/${product.id}`} className="block">
+                    <div className="overflow-hidden aspect-[4/5] relative mb-6 bg-gray-100">
+                      <div className="absolute inset-0 bg-emerald-950/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+                      <img 
+                        src={product.image} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                      />
+                    </div>
+                    <div className="text-center px-4">
+                      <h3 className="text-lg font-serif text-emerald-950 mb-2 group-hover:text-gold-600 transition-colors">{product.name}</h3>
+                      <p className="text-sm text-gray-500 font-light mb-2">{product.stoneColor} • {product.plating}</p>
+                      <p className="text-emerald-900 font-medium tracking-wide">₹{product.price.toLocaleString('en-IN')}</p>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

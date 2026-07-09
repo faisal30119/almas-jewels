@@ -1,0 +1,6 @@
+{
+  "name": "Almas Bridal",
+  "description": "Premium, high-converting, single-page website for Almas Bridal, specializing in luxury Artificial Jewelry and Exquisite Stone Bridal Sets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

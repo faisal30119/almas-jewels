@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783600102474,
+      "tag": "0000_fresh_morph",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783600594476,
+      "tag": "0001_uneven_senator_kelly",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783601990265,
+      "tag": "0002_massive_newton_destine",
+      "breakpoints": true
+    }
+  ]
+}
