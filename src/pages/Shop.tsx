@@ -1,13 +1,39 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Filter } from 'lucide-react';
-import { products, categories, stoneColors, platings, priceRanges } from '../data';
+import { Filter, Loader2, Heart } from 'lucide-react';
+import { products as hardcodedProducts, Product, categories, stoneColors, platings, priceRanges } from '../data';
 import { cn } from '../lib/utils';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { useWishlist } from '../context/WishlistContext';
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const { toggleWishlist, isInWishlist } = useWishlist();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'products'));
+        const fetched = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Product[];
+        setDbProducts([...hardcodedProducts, ...fetched]);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        setDbProducts(hardcodedProducts);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const activeCategory = searchParams.get('category');
   const activeStone = searchParams.get('stone');
@@ -15,7 +41,7 @@ export default function Shop() {
   const activePriceRange = searchParams.get('price');
 
   const filteredProducts = useMemo(() => {
-    return products.filter(p => {
+    return dbProducts.filter(p => {
       if (activeCategory && p.category !== activeCategory) return false;
       if (activeStone && p.stoneColor !== activeStone) return false;
       if (activePlating && p.plating !== activePlating) return false;
@@ -161,7 +187,11 @@ export default function Shop() {
 
         {/* Product Grid */}
         <div className="flex-1">
-          {filteredProducts.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-20 text-gray-500 font-light">
               No products found matching your criteria.
             </div>
@@ -174,8 +204,18 @@ export default function Shop() {
                   animate="visible"
                   variants={fadeInUp}
                   transition={{ delay: idx * 0.1 }}
-                  className="group"
+                  className="group relative"
                 >
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleWishlist(product);
+                    }}
+                    className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-emerald-950 hover:bg-white transition-colors shadow-sm"
+                  >
+                    <Heart className={cn("w-5 h-5 transition-all duration-300", isInWishlist(product.id) ? "fill-gold-500 text-gold-500" : "hover:scale-110")} />
+                  </button>
                   <Link to={`/product/${product.id}`} className="block">
                     <div className="overflow-hidden aspect-[4/5] relative mb-6 bg-gray-100">
                       <div className="absolute inset-0 bg-emerald-950/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />

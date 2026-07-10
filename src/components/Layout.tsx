@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, MessageCircle, User, LogOut, Instagram } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Instagram } from 'lucide-react';
+import { WhatsAppIcon } from './icons';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
@@ -31,6 +32,11 @@ export default function Layout() {
         <div className="flex items-center gap-6">
           {user ? (
             <div className="hidden md:flex items-center gap-4">
+              {user.email === 'faisal301196@gmail.com' && (
+                <Link to="/admin" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors uppercase">
+                  Admin
+                </Link>
+              )}
               <Link to="/profile" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors">
                 {user.displayName}
               </Link>
@@ -88,7 +94,7 @@ export default function Layout() {
                     Send Inquiry
                   </button>
                   <button type="button" className="border border-white/30 hover:border-white text-white px-8 py-4 font-medium tracking-wide transition-all duration-300 flex items-center justify-center gap-2 group">
-                    <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <WhatsAppIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     WhatsApp Us
                   </button>
                 </div>
@@ -98,7 +104,7 @@ export default function Layout() {
             <div className="lg:pl-20 lg:border-l border-white/10 flex flex-col justify-between">
               <div>
                 <h3 className="text-2xl font-serif font-bold tracking-widest uppercase mb-8">Almas Bridal</h3>
-                <div className="grid grid-cols-3 gap-8 text-sm text-white/60 font-light">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 text-sm text-white/60 font-light">
                   <ul className="space-y-4">
                     <li><Link to="/shop" className="hover:text-gold-400 transition-colors">Shop All</Link></li>
                     <li><a href="#" className="hover:text-gold-400 transition-colors">Bridal Sets</a></li>
@@ -117,14 +123,14 @@ export default function Layout() {
                   </div>
                 </div>
               </div>
-              <div className="mt-16 flex items-center justify-between pt-8 border-t border-white/10 text-xs text-white/40 font-light">
-                <p>&copy; {new Date().getFullYear()} Almas Bridal. All rights reserved.</p>
-                <div className="flex gap-6 items-center">
+              <div className="mt-16 flex flex-col-reverse md:flex-row items-center justify-between gap-6 md:gap-0 pt-8 border-t border-white/10 text-xs text-white/40 font-light">
+                <p className="text-center md:text-left">&copy; {new Date().getFullYear()} Almas Bridal. All rights reserved.</p>
+                <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center">
                   <a href="https://instagram.com/almasladiescorner" target="_blank" rel="noopener noreferrer" className="hover:text-gold-400 transition-colors flex items-center gap-2">
                     <Instagram className="w-4 h-4" />
                     <span>@almasladiescorner</span>
                   </a>
-                  <a href="mailto:almasladiescornersakchi@gmail.com" className="hover:text-gold-400 transition-colors">almasladiescornersakchi@gmail.com</a>
+                  <a href="mailto:almasladiescornersakchi@gmail.com" className="hover:text-gold-400 transition-colors text-center">almasladiescornersakchi@gmail.com</a>
                 </div>
               </div>
             </div>

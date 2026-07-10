@@ -1,20 +1,67 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Plus, Minus, ArrowLeft, Check } from 'lucide-react';
-import { products } from '../data';
+import { ChevronDown, Plus, Minus, ArrowLeft, Check, Instagram, Link2, Loader2, Heart } from 'lucide-react';
+import { WhatsAppIcon } from '../components/icons';
+import { products as hardcodedProducts, Product } from '../data';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { cn } from '../lib/utils';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   
-  const product = products.find(p => p.id === id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [quantity, setQuantity] = useState(1);
   const [activeAccordion, setActiveAccordion] = useState<string | null>('inclusions');
   const [isAdded, setIsAdded] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const [isHovering, setIsHovering] = useState(false);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      // Check hardcoded data first
+      const hardcoded = hardcodedProducts.find(p => p.id === id);
+      if (hardcoded) {
+        setProduct(hardcoded);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Fallback to Firestore
+      try {
+        if (!id) return;
+        const docRef = doc(db, 'products', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
+        }
+      } catch (err) {
+        console.error("Error fetching product:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProduct();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="pt-40 pb-24 flex justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -29,6 +76,13 @@ export default function ProductDetail() {
     addToCart(product.id, quantity);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setMousePos({ x, y });
   };
 
   const toggleAccordion = (section: string) => {
@@ -51,15 +105,28 @@ export default function ProductDetail() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-            className="aspect-[4/5] bg-gray-100 overflow-hidden"
+            className="aspect-[4/5] bg-gray-100 overflow-hidden relative cursor-zoom-in"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
           >
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            <img 
+              src={product.image} 
+              alt={product.name} 
+              className={cn(
+                "w-full h-full object-cover transition-transform duration-300 ease-out origin-center",
+                isHovering && "scale-[2]"
+              )}
+              style={{
+                transformOrigin: isHovering ? `${mousePos.x}% ${mousePos.y}%` : 'center center'
+              }}
+            />
           </motion.div>
           {/* Thumbnail placeholders */}
           <div className="grid grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="aspect-square bg-gray-200 overflow-hidden opacity-60 hover:opacity-100 cursor-pointer transition-opacity">
-                <img src={product.image} alt={`${product.name} view ${i}`} className="w-full h-full object-cover" />
+              <div key={i} className="aspect-square bg-gray-200 overflow-hidden opacity-60 hover:opacity-100 cursor-pointer transition-opacity group">
+                <img src={product.image} alt={`${product.name} view ${i}`} className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
               </div>
             ))}
           </div>
@@ -112,6 +179,48 @@ export default function ProductDetail() {
                 ) : (
                   'Add to Cart'
                 )}
+              </button>
+              <button
+                onClick={() => toggleWishlist(product)}
+                className="flex items-center justify-center w-full sm:w-16 h-14 border border-emerald-950/20 text-emerald-950 hover:bg-emerald-50 transition-colors shrink-0"
+                title={isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+              >
+                <Heart className={cn("w-5 h-5", isInWishlist(product.id) ? "fill-gold-500 text-gold-500" : "")} />
+              </button>
+            </div>
+
+            {/* Share */}
+            <div className="flex items-center gap-4 mb-12">
+              <span className="text-xs uppercase tracking-widest text-gray-400">Share:</span>
+              <button 
+                onClick={() => {
+                  const text = `Check out this beautiful jewelry piece from Almas Bridal: ${product.name} - ₹${product.price.toLocaleString('en-IN')}\n\n${window.location.href}`;
+                  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+                }}
+                className="w-10 h-10 rounded-full border border-emerald-950/20 flex items-center justify-center text-emerald-950 hover:bg-gold-100 hover:border-gold-300 transition-colors"
+                title="Share on WhatsApp"
+              >
+                <WhatsAppIcon className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => {
+                  window.open(`https://www.instagram.com/almasladiescorner`, '_blank');
+                }}
+                className="w-10 h-10 rounded-full border border-emerald-950/20 flex items-center justify-center text-emerald-950 hover:bg-gold-100 hover:border-gold-300 transition-colors"
+                title="Visit our Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  setIsCopied(true);
+                  setTimeout(() => setIsCopied(false), 2000);
+                }}
+                className="w-10 h-10 rounded-full border border-emerald-950/20 flex items-center justify-center text-emerald-950 hover:bg-gold-100 hover:border-gold-300 transition-colors relative"
+                title="Copy Link"
+              >
+                {isCopied ? <Check className="w-4 h-4 text-emerald-600" /> : <Link2 className="w-4 h-4" />}
               </button>
             </div>
 

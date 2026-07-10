@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Lock, Loader2, ArrowLeft, Shield, LogIn } from 'lucide-react';
+import { Lock, Loader2, ArrowLeft, Shield, LogIn, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { products } from '../data';
@@ -9,7 +9,7 @@ import { db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function Checkout() {
-  const { items, cartCount, clearCart } = useCart();
+  const { items, cartCount, clearCart, removeFromCart } = useCart();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   
@@ -262,13 +262,24 @@ export default function Checkout() {
             
             <div className="space-y-6 mb-8 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
               {cartItems.map((item) => (
-                <div key={item.productId} className="flex gap-4">
+                <div key={item.productId} className="flex gap-4 group">
                   <div className="w-20 h-24 bg-white flex-shrink-0">
                     <img src={item.product!.image} alt={item.product!.name} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-emerald-950 font-medium text-sm mb-1 leading-snug">{item.product!.name}</h3>
-                    <p className="text-xs text-gray-500 mb-2">Qty: {item.quantity}</p>
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="text-emerald-950 font-medium text-sm mb-1 leading-snug">{item.product!.name}</h3>
+                        <button 
+                          onClick={() => removeFromCart(item.productId)}
+                          className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
+                          title="Remove item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2">Qty: {item.quantity}</p>
+                    </div>
                     <p className="text-emerald-900 font-medium">₹{(item.product!.price * item.quantity).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
                   </div>
                 </div>
