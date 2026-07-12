@@ -273,7 +273,7 @@ export default function Checkout() {
                         <h3 className="text-emerald-950 font-medium text-sm mb-1 leading-snug">{item.product!.name}</h3>
                         <button 
                           onClick={() => removeFromCart(item.productId)}
-                          className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
+                          className="text-gray-400 hover:text-red-500 transition-colors md:opacity-0 md:group-hover:opacity-100 p-1"
                           title="Remove item"
                         >
                           <Trash2 className="w-4 h-4" />

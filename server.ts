@@ -3,8 +3,8 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { requireAuth, requireAdmin, AuthRequest } from "./src/middleware/auth.ts";
 import { db } from "./src/db/index.ts";
-import { users, products } from "./src/db/schema.ts";
-import { eq } from "drizzle-orm";
+import { users, products, orders, orderItems } from "./src/db/schema.ts";
+import { eq, lt } from "drizzle-orm";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import twilio from "twilio";
@@ -53,6 +53,9 @@ function getRazorpayClient() {
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Trust proxy is required for express-rate-limit behind a reverse proxy (like Cloud Run or standard load balancers)
+  app.set("trust proxy", 1);
 
   // Security Middleware
   app.use(helmet({
@@ -118,6 +121,40 @@ async function startServer() {
     } catch (error) {
       console.error("Cloudinary upload error:", error);
       res.status(500).json({ error: "Failed to upload to Cloudinary" });
+    }
+  });
+
+  // Low Stock Endpoint
+  app.get("/api/admin/low-stock", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const lowStockProducts = await db.select().from(products).where(lt(products.stock, 5));
+      res.json(lowStockProducts);
+    } catch (error) {
+      console.error("Error fetching low stock:", error);
+      res.status(500).json({ error: "Failed to fetch low stock products" });
+    }
+  });
+
+  // Admin DB routes
+  app.get("/api/admin/db/:table", requireAdmin, async (req: AuthRequest, res) => {
+    const { table } = req.params;
+    try {
+      let data = [];
+      if (table === 'users') {
+        data = await db.select().from(users).limit(100);
+      } else if (table === 'products') {
+        data = await db.select().from(products).limit(100);
+      } else if (table === 'orders') {
+        data = await db.select().from(orders).limit(100);
+      } else if (table === 'order_items') {
+        data = await db.select().from(orderItems).limit(100);
+      } else {
+        return res.status(400).json({ error: 'Invalid table' });
+      }
+      res.json(data);
+    } catch (error) {
+      console.error(`Error fetching ${table}:`, error);
+      res.status(500).json({ error: 'Failed to fetch data' });
     }
   });
 

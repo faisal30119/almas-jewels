@@ -58,26 +58,36 @@ export default function Layout() {
         </div>
         
         {/* Right: Icons & Actions */}
-        <div className="flex-1 flex justify-end items-center gap-6">
+        <div className="flex-1 flex justify-end items-center gap-4 md:gap-6">
           {user ? (
-            <div className="hidden md:flex items-center gap-4">
-              {user.email === 'faisal301196@gmail.com' && (
-                <Link to="/admin" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors uppercase">
-                  Admin
+            <>
+              <div className="hidden md:flex items-center gap-4">
+                {user.email === 'faisal301196@gmail.com' && (
+                  <Link to="/admin" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors uppercase">
+                    Admin
+                  </Link>
+                )}
+                <Link to="/profile" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors truncate max-w-[100px]">
+                  {user.displayName?.split(' ')[0]}
                 </Link>
-              )}
-              <Link to="/profile" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors truncate max-w-[100px]">
-                {user.displayName?.split(' ')[0]}
+                <button onClick={signOut} className="hover:text-gold-400 transition-colors" title="Sign Out">
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+              <Link to="/profile" className="md:hidden hover:text-gold-400 transition-colors shrink-0" title="My Profile">
+                <User className="w-5 h-5" />
               </Link>
-              <button onClick={signOut} className="hover:text-gold-400 transition-colors" title="Sign Out">
-                <LogOut className="w-5 h-5" />
-              </button>
-            </div>
+            </>
           ) : (
-            <button onClick={signInWithGoogle} className="hidden md:flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs tracking-widest font-medium shrink-0">
-              <User className="w-4 h-4" />
-              Sign In
-            </button>
+            <>
+              <button onClick={signInWithGoogle} className="hidden md:flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs tracking-widest font-medium shrink-0">
+                <User className="w-4 h-4" />
+                Sign In
+              </button>
+              <button onClick={signInWithGoogle} className="md:hidden hover:text-gold-400 transition-colors shrink-0" title="Sign In">
+                <User className="w-5 h-5" />
+              </button>
+            </>
           )}
           <Link to="/checkout" className="relative hover:text-gold-400 transition-colors shrink-0">
             <ShoppingBag className="w-5 h-5" />
@@ -194,10 +204,10 @@ export default function Layout() {
                   <button type="button" className="bg-gold-500 hover:bg-gold-400 text-emerald-950 px-8 py-4 font-medium tracking-wide transition-all duration-300 flex-1">
                     Send Inquiry
                   </button>
-                  <button type="button" className="border border-white/30 hover:border-white text-white px-8 py-4 font-medium tracking-wide transition-all duration-300 flex items-center justify-center gap-2 group">
+                  <a href="https://wa.me/919973819387" target="_blank" rel="noopener noreferrer" className="border border-white/30 hover:border-white text-white px-8 py-4 font-medium tracking-wide transition-all duration-300 flex items-center justify-center gap-2 group">
                     <WhatsAppIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     WhatsApp Us
-                  </button>
+                  </a>
                 </div>
               </form>
             </div>
