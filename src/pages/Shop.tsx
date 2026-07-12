@@ -66,12 +66,19 @@ export default function Shop() {
   };
 
   const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    hidden: { opacity: 0, y: 40 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: [0.16, 1, 0.3, 1]
+      }
+    }
   };
 
   return (
-    <div className="pt-32 pb-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
+    <div className="pt-12 pb-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
       <div className="text-center mb-16">
         <h1 className="text-4xl md:text-5xl font-serif text-emerald-950 mb-4">The Collection</h1>
         <div className="w-16 h-0.5 bg-gold-500 mx-auto mb-6"></div>
@@ -201,9 +208,9 @@ export default function Shop() {
                 <motion.div 
                   key={product.id}
                   initial="hidden"
-                  animate="visible"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.1 }}
                   variants={fadeInUp}
-                  transition={{ delay: idx * 0.1 }}
                   className="group relative"
                 >
                   <button 

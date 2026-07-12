@@ -1,6 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, User, LogOut, Instagram } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Instagram, Menu, X } from 'lucide-react';
 import { WhatsAppIcon } from './icons';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -11,25 +12,53 @@ export default function Layout() {
   const { user, signInWithGoogle, signOut } = useAuth();
   const location = useLocation();
   const isHome = location.pathname === '/';
+  
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close mobile menu on path change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-emerald-950 font-sans selection:bg-gold-500 selection:text-white flex flex-col">
       <nav className={cn(
-        "absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 md:px-12 lg:px-24 transition-colors duration-300",
-        isHome ? "text-white" : "bg-emerald-950 text-white"
+        "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-5 md:px-12 lg:px-24 transition-all duration-300 border-b",
+        isHome 
+          ? (isScrolled || isMobileMenuOpen)
+            ? "bg-emerald-950/95 backdrop-blur-md text-white shadow-md border-white/10" 
+            : "bg-transparent text-white border-transparent"
+          : "bg-emerald-950/95 backdrop-blur-md text-white shadow-md border-white/10"
       )}>
-        <div className="flex items-center gap-8">
-          <Link to="/" className="text-2xl font-serif font-bold tracking-widest uppercase">
+        {/* Left: Logo */}
+        <div className="flex-1 flex justify-start">
+          <Link to="/" className="text-2xl font-serif font-bold tracking-widest uppercase shrink-0">
             Almas Bridal
           </Link>
-          <div className="hidden md:flex gap-6 text-sm uppercase tracking-widest font-medium">
-            <Link to="/" className="hover:text-gold-400 transition-colors">Home</Link>
-            <Link to="/shop" className="hover:text-gold-400 transition-colors">Shop Collection</Link>
-            <Link to="/track" className="hover:text-gold-400 transition-colors">Track Order</Link>
-          </div>
         </div>
         
-        <div className="flex items-center gap-6">
+        {/* Center: Nav Links */}
+        <div className="hidden md:flex flex-1 justify-center gap-10 text-sm uppercase tracking-widest font-medium">
+          <Link to="/" className="hover:text-gold-400 transition-colors">Home</Link>
+          <Link to="/shop" className="hover:text-gold-400 transition-colors">Shop Collection</Link>
+          <Link to="/track" className="hover:text-gold-400 transition-colors">Track Order</Link>
+        </div>
+        
+        {/* Right: Icons & Actions */}
+        <div className="flex-1 flex justify-end items-center gap-6">
           {user ? (
             <div className="hidden md:flex items-center gap-4">
               {user.email === 'faisal301196@gmail.com' && (
@@ -37,20 +66,20 @@ export default function Layout() {
                   Admin
                 </Link>
               )}
-              <Link to="/profile" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors">
-                {user.displayName}
+              <Link to="/profile" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors truncate max-w-[100px]">
+                {user.displayName?.split(' ')[0]}
               </Link>
               <button onClick={signOut} className="hover:text-gold-400 transition-colors" title="Sign Out">
                 <LogOut className="w-5 h-5" />
               </button>
             </div>
           ) : (
-            <button onClick={signInWithGoogle} className="hidden md:flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs tracking-widest font-medium">
+            <button onClick={signInWithGoogle} className="hidden md:flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs tracking-widest font-medium shrink-0">
               <User className="w-4 h-4" />
               Sign In
             </button>
           )}
-          <Link to="/checkout" className="relative hover:text-gold-400 transition-colors">
+          <Link to="/checkout" className="relative hover:text-gold-400 transition-colors shrink-0">
             <ShoppingBag className="w-5 h-5" />
             <AnimatePresence>
               {cartCount > 0 && (
@@ -65,11 +94,83 @@ export default function Layout() {
               )}
             </AnimatePresence>
           </Link>
+          
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden text-white hover:text-gold-400 transition-colors focus:outline-none shrink-0"
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
       </nav>
 
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-x-0 top-[73px] bottom-0 bg-emerald-950/98 backdrop-blur-md z-40 flex flex-col px-8 py-12 md:hidden"
+          >
+            <div className="flex flex-col gap-8 text-lg uppercase tracking-widest font-serif font-medium text-white/90">
+              <Link to="/" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5">Home</Link>
+              <Link to="/shop" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5">Shop Collection</Link>
+              <Link to="/track" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5">Track Order</Link>
+              
+              {user ? (
+                <>
+                  <Link to="/profile" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5">
+                    My Profile ({user.displayName?.split(' ')[0]})
+                  </Link>
+                  {user.email === 'faisal301196@gmail.com' && (
+                    <Link to="/admin" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5 text-gold-400">
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <button 
+                    onClick={() => {
+                      signOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 hover:text-gold-400 transition-colors py-2 text-left text-sm uppercase tracking-widest font-sans font-normal opacity-80 mt-4"
+                  >
+                    <LogOut className="w-4 h-4" /> Sign Out
+                  </button>
+                </>
+              ) : (
+                <button 
+                  onClick={() => {
+                    signInWithGoogle();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 bg-gold-500 text-emerald-950 px-6 py-3 font-sans uppercase text-sm tracking-widest font-medium hover:bg-gold-400 transition-colors mt-4 justify-center"
+                >
+                  <User className="w-4 h-4" /> Sign In
+                </button>
+              )}
+            </div>
+            
+            <div className="mt-auto pt-8 border-t border-white/5 flex flex-col gap-4 text-xs text-white/40 font-light">
+              <div className="flex gap-4 justify-center">
+                <a href="https://instagram.com/almasladiescorner" target="_blank" rel="noopener noreferrer" className="hover:text-gold-400 transition-colors flex items-center gap-2">
+                  <Instagram className="w-4 h-4" />
+                  <span>@almasladiescorner</span>
+                </a>
+              </div>
+              <p className="text-center">&copy; {new Date().getFullYear()} Almas Bridal.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <main className="flex-grow">
-        <Outlet />
+        <div className={cn(!isHome && "pt-[73px]")}>
+          <Outlet />
+        </div>
       </main>
 
       <footer className="bg-emerald-950 text-white pt-24 pb-12 px-6 md:px-12 lg:px-24">

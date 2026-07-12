@@ -46,7 +46,7 @@ export default function OrderTracking() {
   const currentStep = getCurrentStepIndex();
 
   return (
-    <div className="pt-32 pb-24 px-6 md:px-12 lg:px-24 max-w-4xl mx-auto min-h-[70vh]">
+    <div className="pt-12 pb-24 px-6 md:px-12 lg:px-24 max-w-4xl mx-auto min-h-[70vh]">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-serif text-emerald-950 mb-4">Track Your Order</h1>
         <p className="text-gray-500 font-light max-w-lg mx-auto">

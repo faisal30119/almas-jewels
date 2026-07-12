@@ -92,14 +92,14 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="pt-32 pb-24 text-center">
+      <div className="pt-20 pb-24 text-center">
         <p>Please sign in to view your profile.</p>
       </div>
     );
   }
 
   return (
-    <div className="pt-32 pb-24 px-6 md:px-12 lg:px-24 max-w-5xl mx-auto min-h-[70vh]">
+    <div className="pt-12 pb-24 px-6 md:px-12 lg:px-24 max-w-5xl mx-auto min-h-[70vh]">
       <div className="flex flex-col md:flex-row justify-between items-start mb-12 gap-6">
         <div>
           <h1 className="text-4xl font-serif text-emerald-950 mb-2">My Profile</h1>

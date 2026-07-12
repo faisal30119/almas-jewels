@@ -57,7 +57,7 @@ export default function ProductDetail() {
 
   if (isLoading) {
     return (
-      <div className="pt-40 pb-24 flex justify-center min-h-[60vh]">
+      <div className="pt-20 pb-24 flex justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
       </div>
     );
@@ -65,7 +65,7 @@ export default function ProductDetail() {
 
   if (!product) {
     return (
-      <div className="pt-40 pb-24 text-center min-h-[60vh]">
+      <div className="pt-20 pb-24 text-center min-h-[60vh]">
         <h2 className="text-2xl font-serif text-emerald-950 mb-4">Product Not Found</h2>
         <Link to="/shop" className="text-gold-600 hover:text-gold-500 underline underline-offset-4">Return to Shop</Link>
       </div>
@@ -90,7 +90,7 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="pt-32 pb-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
+    <div className="pt-12 pb-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
       <button 
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm uppercase tracking-widest text-gray-500 hover:text-emerald-950 transition-colors mb-10"

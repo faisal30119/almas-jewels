@@ -174,7 +174,7 @@ export default function Checkout() {
 
   if (cartCount === 0) {
     return (
-      <div className="pt-40 pb-24 text-center min-h-[60vh]">
+      <div className="pt-20 pb-24 text-center min-h-[60vh]">
         <h2 className="text-2xl font-serif text-emerald-950 mb-4">Your Cart is Empty</h2>
         <p className="text-gray-500 font-light mb-8">Looks like you haven't added any elegant pieces yet.</p>
         <Link to="/shop" className="bg-emerald-950 hover:bg-emerald-900 text-white px-8 py-4 uppercase tracking-widest text-sm font-medium transition-colors">
@@ -186,7 +186,7 @@ export default function Checkout() {
 
   if (!loading && !user) {
     return (
-      <div className="pt-40 pb-24 px-6 md:px-12 text-center min-h-[60vh] max-w-2xl mx-auto flex flex-col items-center justify-center">
+      <div className="pt-20 pb-24 px-6 md:px-12 text-center min-h-[60vh] max-w-2xl mx-auto flex flex-col items-center justify-center">
         <Shield className="w-16 h-16 text-emerald-950/20 mb-6" />
         <h2 className="text-3xl font-serif text-emerald-950 mb-4">Sign in to Checkout</h2>
         <p className="text-gray-500 font-light mb-8 text-lg">Please sign in or create an account to securely complete your purchase and track your order.</p>
@@ -202,7 +202,7 @@ export default function Checkout() {
   }
 
   return (
-    <div className="pt-32 pb-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
+    <div className="pt-12 pb-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
       <div className="mb-12">
         <Link to="/shop" className="flex items-center gap-2 text-sm uppercase tracking-widest text-gray-500 hover:text-emerald-950 transition-colors mb-4 w-max">
           <ArrowLeft className="w-4 h-4" /> Continue Shopping

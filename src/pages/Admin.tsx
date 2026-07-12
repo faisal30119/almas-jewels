@@ -68,7 +68,7 @@ export default function Admin() {
   };
 
   return (
-    <div className="pt-32 pb-24 px-6 max-w-3xl mx-auto">
+    <div className="pt-12 pb-24 px-6 max-w-3xl mx-auto">
       <h1 className="text-3xl font-serif text-emerald-950 mb-8">Admin Dashboard - Add Product</h1>
       
       {!user || user.email !== 'faisal301196@gmail.com' ? (
