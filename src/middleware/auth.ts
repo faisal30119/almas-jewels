@@ -27,3 +27,28 @@ export const requireAuth = async (
     res.status(401).json({ error: 'Unauthorized: Invalid token' });
   }
 };
+
+export const requireAdmin = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  // First ensure they are authenticated
+  await requireAuth(req, res, () => {
+    if (!req.user || !req.user.email) {
+      res.status(401).json({ error: 'Unauthorized: User or email not found' });
+      return;
+    }
+
+    const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim()) : [];
+    
+    // Also include the hardcoded admin email used in frontend, to be safe, or just rely on env
+    // For now we'll rely on ADMIN_EMAILS environment variable
+    if (!adminEmails.includes(req.user.email)) {
+      res.status(403).json({ error: 'Forbidden: Admin access required' });
+      return;
+    }
+    
+    next();
+  });
+};

@@ -136,6 +136,7 @@ export default function Checkout() {
               body: JSON.stringify({
                 orderId,
                 paymentId: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
                 email: shippingDetails.email,
                 phone: shippingDetails.phone,
                 amount: total

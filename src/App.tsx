@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout';
 import Success from './pages/Success';
 import OrderTracking from './pages/OrderTracking';
 import Profile from './pages/Profile';
+import { AdminRoute } from './components/AdminRoute';
 
 import Admin from './pages/Admin';
 
@@ -27,7 +28,11 @@ export default function App() {
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="track" element={<OrderTracking />} />
                 <Route path="profile" element={<Profile />} />
-                <Route path="admin" element={<Admin />} />
+                <Route path="admin" element={
+                  <AdminRoute>
+                    <Admin />
+                  </AdminRoute>
+                } />
               </Route>
               <Route path="/success" element={<Success />} />
             </Routes>

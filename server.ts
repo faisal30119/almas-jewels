@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
+import { requireAuth, requireAdmin, AuthRequest } from "./src/middleware/auth.ts";
 import { db } from "./src/db/index.ts";
 import { users, products } from "./src/db/schema.ts";
 import { eq } from "drizzle-orm";
@@ -10,6 +10,10 @@ import { v2 as cloudinary } from "cloudinary";
 import twilio from "twilio";
 import Razorpay from "razorpay";
 import nodemailer from "nodemailer";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
+import crypto from "crypto";
 
 // Initialize Cloudinary conditionally
 if (process.env.CLOUDINARY_CLOUD_NAME) {
@@ -50,6 +54,22 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Security Middleware
+  app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP for Vite dev server and external assets
+  }));
+  app.use(cors());
+
+  // Rate Limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: "Too many requests from this IP, please try again later."
+  });
+  
+  // Apply rate limiter to all /api routes
+  app.use("/api/", limiter);
+
   app.use(express.json());
 
   // API Routes
@@ -74,8 +94,7 @@ async function startServer() {
   });
 
   // Upload Product Media to Cloudinary
-  app.post("/api/admin/upload", requireAuth, upload.single("file"), async (req: AuthRequest, res) => {
-    // Note: In a real app, add check to ensure req.user is an admin
+  app.post("/api/admin/upload", requireAdmin, upload.single("file"), async (req: AuthRequest, res) => {
     if (!req.file) {
       res.status(400).json({ error: "No file uploaded" });
       return;
@@ -103,8 +122,7 @@ async function startServer() {
   });
 
   // Inventory Sync Logic
-  app.post("/api/inventory/sync", requireAuth, async (req: AuthRequest, res) => {
-    // Note: In a real app, add check to ensure req.user is an admin
+  app.post("/api/inventory/sync", requireAdmin, async (req: AuthRequest, res) => {
     const { updates } = req.body;
     if (!Array.isArray(updates)) {
       res.status(400).json({ error: "Invalid updates array" });
@@ -112,14 +130,16 @@ async function startServer() {
     }
 
     try {
-      // Execute sequentially or use a transaction
-      for (const update of updates) {
-        if (typeof update.productId === "number" && typeof update.stock === "number") {
-          await db.update(products)
-            .set({ stock: update.stock })
-            .where(eq(products.id, update.productId));
+      // Execute within a transaction
+      await db.transaction(async (tx) => {
+        for (const update of updates) {
+          if (typeof update.productId === "number" && typeof update.stock === "number") {
+            await tx.update(products)
+              .set({ stock: update.stock })
+              .where(eq(products.id, update.productId));
+          }
         }
-      }
+      });
       res.json({ success: true, message: "Inventory synced successfully" });
     } catch (error) {
       console.error("Inventory sync error:", error);
@@ -128,8 +148,7 @@ async function startServer() {
   });
 
   // WhatsApp Notification Route
-  app.post("/api/notifications/whatsapp", requireAuth, async (req: AuthRequest, res) => {
-    // Note: In a real app, add check to ensure req.user is an admin
+  app.post("/api/notifications/whatsapp", requireAdmin, async (req: AuthRequest, res) => {
     const { to, message } = req.body;
     
     if (!to || !message) {
@@ -208,9 +227,22 @@ async function startServer() {
 
   // Handle successful payment: Send Notifications (Email & WhatsApp)
   app.post("/api/payment/success", async (req, res) => {
-    const { orderId, paymentId, email, phone, amount } = req.body;
+    const { orderId, paymentId, email, phone, amount, razorpay_signature } = req.body;
 
-    // In a real application, you should verify the Razorpay signature here before proceeding.
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    
+    // Verify signature if keys are provided
+    if (secret && razorpay_signature && orderId && paymentId) {
+      const generatedSignature = crypto.createHmac("sha256", secret)
+                                      .update(orderId + "|" + paymentId)
+                                      .digest("hex");
+                                      
+      if (generatedSignature !== razorpay_signature) {
+        res.status(400).json({ error: "Invalid payment signature" });
+        return;
+      }
+    }
+
     console.log(`Payment successful for order: ${orderId}, paymentId: ${paymentId}`);
 
     const emailHtml = `
