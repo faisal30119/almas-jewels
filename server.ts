@@ -80,6 +80,36 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  app.get("/api/products", async (req, res) => {
+    try {
+      const allProducts = await db.select().from(products);
+      res.json(allProducts);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      res.status(500).json({ error: "Failed to fetch products" });
+    }
+  });
+
+  app.get("/api/products/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      const parsedId = Number(id);
+      if (isNaN(parsedId)) {
+        res.status(404).json({ error: "Product not found" });
+        return;
+      }
+      const product = await db.select().from(products).where(eq(products.id, parsedId)).limit(1);
+      if (product.length > 0) {
+        res.json(product[0]);
+      } else {
+        res.status(404).json({ error: "Product not found" });
+      }
+    } catch (error) {
+      console.error("Failed to fetch product:", error);
+      res.status(500).json({ error: "Failed to fetch product" });
+    }
+  });
+
   // Example secured route
   app.post("/api/users/sync", requireAuth, async (req: AuthRequest, res) => {
     if (!req.user) {

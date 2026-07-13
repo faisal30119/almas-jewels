@@ -134,44 +134,44 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
             {/* Category 1 */}
             <motion.div variants={fadeInUp} className="group bg-white cursor-pointer relative overflow-hidden aspect-[3/4]">
-              <Link to="/shop?category=Full%20Bridal%20Sets" className="block w-full h-full">
+              <Link to="/shop?category=Bridal%20Sets" className="block w-full h-full">
                 <div className="absolute inset-0 bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                <img src={royalCollectionImg} alt="Full Bridal Sets" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                <img src={royalCollectionImg} alt="Bridal Sets" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-emerald-950/80 to-transparent">
-                  <h3 className="text-xl font-serif text-white mb-1">Full Bridal Sets</h3>
+                  <h3 className="text-xl font-serif text-white mb-1">Bridal Sets</h3>
                   <p className="text-sm text-gold-400 uppercase tracking-widest">Shop Now</p>
                 </div>
               </Link>
             </motion.div>
             {/* Category 2 */}
             <motion.div variants={fadeInUp} className="group bg-white cursor-pointer relative overflow-hidden aspect-[3/4]">
-              <Link to="/shop?category=Kundan%20Collections" className="block w-full h-full">
+              <Link to="/shop?category=Necklaces" className="block w-full h-full">
                 <div className="absolute inset-0 bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                <img src={occasionCollectionImg} alt="Kundan Collections" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                <img src={occasionCollectionImg} alt="Necklaces" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-emerald-950/80 to-transparent">
-                  <h3 className="text-xl font-serif text-white mb-1">Kundan Collections</h3>
+                  <h3 className="text-xl font-serif text-white mb-1">Necklaces</h3>
                   <p className="text-sm text-gold-400 uppercase tracking-widest">Shop Now</p>
                 </div>
               </Link>
             </motion.div>
             {/* Category 3 */}
             <motion.div variants={fadeInUp} className="group bg-white cursor-pointer relative overflow-hidden aspect-[3/4]">
-              <Link to="/shop?category=Choker%20Sets" className="block w-full h-full">
+              <Link to="/shop?category=Earrings" className="block w-full h-full">
                 <div className="absolute inset-0 bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                <img src={solitaireCollectionImg} alt="Choker Sets" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                <img src={solitaireCollectionImg} alt="Earrings" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-emerald-950/80 to-transparent">
-                  <h3 className="text-xl font-serif text-white mb-1">Choker Sets</h3>
+                  <h3 className="text-xl font-serif text-white mb-1">Earrings</h3>
                   <p className="text-sm text-gold-400 uppercase tracking-widest">Shop Now</p>
                 </div>
               </Link>
             </motion.div>
             {/* Category 4 */}
             <motion.div variants={fadeInUp} className="group bg-white cursor-pointer relative overflow-hidden aspect-[3/4]">
-              <Link to="/shop?category=Statement%20Rings" className="block w-full h-full">
+              <Link to="/shop" className="block w-full h-full">
                 <div className="absolute inset-0 bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                <img src={videoThumbnailImg} alt="Statement Rings" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                <img src={videoThumbnailImg} alt="All Products" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-emerald-950/80 to-transparent">
-                  <h3 className="text-xl font-serif text-white mb-1">Statement Rings</h3>
+                  <h3 className="text-xl font-serif text-white mb-1">All Products</h3>
                   <p className="text-sm text-gold-400 uppercase tracking-widest">Shop Now</p>
                 </div>
               </Link>

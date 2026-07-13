@@ -36,6 +36,22 @@ export default function ProductDetail() {
         return;
       }
       
+      try {
+        if (!id) return;
+        const res = await fetch(`/api/products/${id}`);
+        if (res.ok) {
+          const item = await res.json();
+          setProduct({
+            ...item,
+            id: String(item.id),
+            stoneColor: item.stone_color || item.stoneColor,
+          } as Product);
+          return;
+        }
+      } catch (err) {
+        console.error("Error fetching from API:", err);
+      }
+
       // Fallback to Firestore
       try {
         if (!id) return;

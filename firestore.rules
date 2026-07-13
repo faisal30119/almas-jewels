@@ -16,6 +16,15 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && request.auth.token.email == 'faisal301196@gmail.com';
     }
 
+    match /inquiries/{inquiryId} {
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'weddingDate', 'createdAt'])
+                    && request.resource.data.name is string
+                    && request.resource.data.email is string
+                    && request.resource.data.weddingDate is string
+                    && request.resource.data.createdAt is string;
+      allow read, update, delete: if request.auth != null && request.auth.token.email == 'faisal301196@gmail.com';
+    }
+
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }

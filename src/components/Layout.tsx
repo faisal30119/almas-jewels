@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, User, LogOut, Instagram, Menu, X } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Instagram, Menu, X, Check } from 'lucide-react';
 import { WhatsAppIcon } from './icons';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
+import { db } from '../lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function Layout() {
   const { cartCount } = useCart();
@@ -15,6 +17,37 @@ export default function Layout() {
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Inquiry form state
+  const [inquiryName, setInquiryName] = useState('');
+  const [inquiryEmail, setInquiryEmail] = useState('');
+  const [inquiryDate, setInquiryDate] = useState('');
+  const [isSendingInquiry, setIsSendingInquiry] = useState(false);
+  const [inquirySent, setInquirySent] = useState(false);
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inquiryName || !inquiryEmail) return;
+    
+    setIsSendingInquiry(true);
+    try {
+      await addDoc(collection(db, 'inquiries'), {
+        name: inquiryName,
+        email: inquiryEmail,
+        weddingDate: inquiryDate,
+        createdAt: new Date().toISOString()
+      });
+      setInquirySent(true);
+      setInquiryName('');
+      setInquiryEmail('');
+      setInquiryDate('');
+      setTimeout(() => setInquirySent(false), 5000);
+    } catch (error) {
+      console.error("Failed to send inquiry", error);
+    } finally {
+      setIsSendingInquiry(false);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -190,19 +223,35 @@ export default function Layout() {
               <h2 className="text-3xl md:text-5xl font-serif mb-6 text-gold-400">Found Your Dream Set?</h2>
               <p className="text-white/70 font-light mb-10 max-w-md text-lg">Let's customize your look. Reach out to our bridal stylists to discuss your requirements.</p>
               
-              <form className="space-y-6 max-w-md" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-6 max-w-md" onSubmit={handleInquirySubmit}>
                 <div>
-                  <input type="text" placeholder="Your Name" className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors" />
+                  <input required value={inquiryName} onChange={e => setInquiryName(e.target.value)} type="text" placeholder="Your Name" className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors" />
                 </div>
                 <div>
-                  <input type="email" placeholder="Email Address" className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors" />
+                  <input required value={inquiryEmail} onChange={e => setInquiryEmail(e.target.value)} type="email" placeholder="Email Address" className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors" />
                 </div>
                 <div>
-                  <input type="text" placeholder="Wedding Date" className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors" />
+                  <input 
+                    value={inquiryDate} 
+                    onChange={e => setInquiryDate(e.target.value)} 
+                    onFocus={(e) => {
+                      e.target.type = 'date';
+                      try { e.target.showPicker(); } catch (err) {}
+                    }}
+                    onClick={(e) => {
+                      e.target.type = 'date';
+                      try { e.target.showPicker(); } catch (err) {}
+                    }}
+                    onBlur={(e) => { if (!inquiryDate) e.target.type = 'text' }}
+                    type="text" 
+                    placeholder="Wedding Date (Optional)" 
+                    className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors cursor-pointer" 
+                    style={{ colorScheme: 'dark' }}
+                  />
                 </div>
                 <div className="pt-4 flex flex-col sm:flex-row gap-4">
-                  <button type="button" className="bg-gold-500 hover:bg-gold-400 text-emerald-950 px-8 py-4 font-medium tracking-wide transition-all duration-300 flex-1">
-                    Send Inquiry
+                  <button disabled={isSendingInquiry || inquirySent} type="submit" className={cn("px-8 py-4 font-medium tracking-wide transition-all duration-300 flex-1 flex items-center justify-center gap-2", inquirySent ? "bg-green-600 text-white" : "bg-gold-500 hover:bg-gold-400 text-emerald-950")}>
+                    {inquirySent ? <><Check className="w-5 h-5"/> Sent Successfully</> : isSendingInquiry ? 'Sending...' : 'Send Inquiry'}
                   </button>
                   <a href="https://wa.me/919973819387" target="_blank" rel="noopener noreferrer" className="border border-white/30 hover:border-white text-white px-8 py-4 font-medium tracking-wide transition-all duration-300 flex items-center justify-center gap-2 group">
                     <WhatsAppIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />

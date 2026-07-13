@@ -19,15 +19,33 @@ export default function Shop() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'products'));
-        const fetched = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Product[];
-        setDbProducts([...hardcodedProducts, ...fetched]);
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          // Convert database fields from snake_case to camelCase if necessary
+          const formattedData = data.map((item: any) => ({
+            ...item,
+            id: String(item.id),
+            stoneColor: item.stone_color || item.stoneColor,
+          }));
+          setDbProducts([...hardcodedProducts, ...formattedData]);
+        } else {
+          throw new Error('Failed to fetch API products');
+        }
       } catch (err) {
         console.error("Failed to fetch products:", err);
-        setDbProducts(hardcodedProducts);
+        // Fallback to Firebase
+        try {
+          const querySnapshot = await getDocs(collection(db, 'products'));
+          const fetched = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Product[];
+          setDbProducts([...hardcodedProducts, ...fetched]);
+        } catch (fbErr) {
+           console.error("Failed to fetch from Firebase:", fbErr);
+           setDbProducts(hardcodedProducts);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -53,7 +71,7 @@ export default function Shop() {
       }
       return true;
     });
-  }, [activeCategory, activeStone, activePlating, activePriceRange]);
+  }, [activeCategory, activeStone, activePlating, activePriceRange, dbProducts]);
 
   const updateFilter = (key: string, value: string | null) => {
     const newParams = new URLSearchParams(searchParams);
