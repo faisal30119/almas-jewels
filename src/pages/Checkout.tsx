@@ -1,18 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Lock, Loader2, ArrowLeft, Shield, LogIn, Trash2 } from 'lucide-react';
+import { Lock, Loader2, ArrowLeft, Shield, LogIn, Trash2, Phone } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { products } from '../data';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 
 export default function Checkout() {
   const { items, cartCount, clearCart, removeFromCart } = useCart();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   
+  const [loginMethod, setLoginMethod] = useState<'google' | 'phone' | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [shippingDetails, setShippingDetails] = useState({
     firstName: '',
@@ -49,6 +57,64 @@ export default function Checkout() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setShippingDetails(prev => ({ ...prev, [name]: value }));
+  };
+
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible'
+      });
+    }
+  };
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phoneNumber) {
+      setPhoneError("Please enter a valid phone number");
+      return;
+    }
+    setPhoneError('');
+    setPhoneLoading(true);
+    
+    try {
+      setupRecaptcha();
+      const appVerifier = window.recaptchaVerifier;
+      const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
+      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+      setConfirmationResult(confirmation);
+    } catch (error: any) {
+      if (error.code === 'auth/operation-not-allowed') {
+        setPhoneError("Phone authentication is not enabled. Please enable it in the Firebase Console -> Authentication -> Sign-in method.");
+      } else {
+        console.error(error);
+        setPhoneError(error.message || "Failed to send OTP. Please try again.");
+      }
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.render().then((widgetId: any) => {
+          (window as any).grecaptcha.reset(widgetId);
+        });
+      }
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp || !confirmationResult) return;
+    
+    setPhoneError('');
+    setPhoneLoading(true);
+    
+    try {
+      await confirmationResult.confirm(otp);
+      // Auth context will automatically handle the user state update
+    } catch (error: any) {
+      console.error(error);
+      setPhoneError(error.message || "Invalid OTP. Please try again.");
+    } finally {
+      setPhoneLoading(false);
+    }
   };
 
   const handlePaymentSubmit = async (e: React.FormEvent) => {
@@ -191,13 +257,119 @@ export default function Checkout() {
         <Shield className="w-16 h-16 text-emerald-950/20 mb-6" />
         <h2 className="text-3xl font-serif text-emerald-950 mb-4">Sign in to Checkout</h2>
         <p className="text-gray-500 font-light mb-8 text-lg">Please sign in or create an account to securely complete your purchase and track your order.</p>
-        <button 
-          onClick={signInWithGoogle}
-          className="flex items-center gap-3 bg-emerald-950 hover:bg-emerald-900 text-white px-8 py-4 uppercase tracking-widest text-sm font-medium transition-colors"
-        >
-          <LogIn className="w-5 h-5" />
-          Continue with Google
-        </button>
+        
+        <div className="w-full max-w-md space-y-4">
+          {!loginMethod && (
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={async () => {
+                  try {
+                    await signInWithGoogle();
+                  } catch (e) {}
+                }}
+                className="w-full flex items-center justify-center gap-3 bg-emerald-950 hover:bg-emerald-900 text-white px-8 py-4 uppercase tracking-widest text-sm font-medium transition-colors"
+              >
+                <LogIn className="w-5 h-5" />
+                Continue with Google
+              </button>
+              
+              <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+
+              <button 
+                onClick={() => setLoginMethod('phone')}
+                className="w-full flex items-center justify-center gap-3 border border-emerald-950 text-emerald-950 hover:bg-emerald-50 px-8 py-4 uppercase tracking-widest text-sm font-medium transition-colors"
+              >
+                <Phone className="w-5 h-5" />
+                Continue with Phone
+              </button>
+            </div>
+          )}
+
+          {loginMethod === 'phone' && (
+            <div className="bg-white p-6 md:p-8 border border-gray-200 text-left">
+              <div className="flex items-center gap-3 mb-6">
+                <button onClick={() => {
+                  setLoginMethod(null);
+                  setConfirmationResult(null);
+                  setPhoneNumber('');
+                  setOtp('');
+                  setPhoneError('');
+                }} className="text-gray-400 hover:text-emerald-950 transition-colors">
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <h3 className="text-xl font-serif text-emerald-950">Phone Sign In</h3>
+              </div>
+              
+              {phoneError && <p className="text-red-500 text-sm mb-4">{phoneError}</p>}
+              
+              {!confirmationResult ? (
+                <form onSubmit={handleSendOtp} className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2 font-medium">Phone Number</label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 sm:text-sm">
+                        +91
+                      </span>
+                      <input 
+                        type="tel" 
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                        placeholder="10-digit mobile number" 
+                        className="flex-1 block w-full bg-white border border-gray-200 p-3 focus:outline-none focus:border-emerald-950 transition-colors font-light" 
+                        required 
+                        maxLength={10}
+                      />
+                    </div>
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={phoneLoading || phoneNumber.length < 10}
+                    className="w-full bg-emerald-950 hover:bg-emerald-900 disabled:bg-emerald-950/70 text-white py-3 flex items-center justify-center gap-2 uppercase tracking-widest font-medium text-sm transition-colors"
+                  >
+                    {phoneLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP'}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyOtp} className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2 font-medium">Enter OTP sent to +91 {phoneNumber}</label>
+                    <input 
+                      type="text" 
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                      placeholder="6-digit OTP" 
+                      className="w-full bg-white border border-gray-200 p-3 text-center tracking-[1em] focus:outline-none focus:border-emerald-950 transition-colors font-light" 
+                      required 
+                      maxLength={6}
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={phoneLoading || otp.length < 6}
+                    className="w-full bg-emerald-950 hover:bg-emerald-900 disabled:bg-emerald-950/70 text-white py-3 flex items-center justify-center gap-2 uppercase tracking-widest font-medium text-sm transition-colors"
+                  >
+                    {phoneLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Sign In'}
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setConfirmationResult(null);
+                      setOtp('');
+                    }}
+                    className="w-full text-center text-sm text-emerald-950 font-medium pt-2"
+                  >
+                    Change Phone Number
+                  </button>
+                </form>
+              )}
+              <div id="recaptcha-container" ref={recaptchaContainerRef}></div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

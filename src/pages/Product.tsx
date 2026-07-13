@@ -206,17 +206,18 @@ export default function ProductDetail() {
             </div>
 
             {/* Share */}
-            <div className="flex items-center gap-4 mb-12">
+            <div className="flex flex-wrap items-center gap-4 mb-12">
               <span className="text-xs uppercase tracking-widest text-gray-400">Share:</span>
               <button 
                 onClick={() => {
                   const text = `Check out this beautiful jewelry piece from Almas Bridal: ${product.name} - ₹${product.price.toLocaleString('en-IN')}\n\n${window.location.href}`;
                   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
                 }}
-                className="w-10 h-10 rounded-full border border-emerald-950/20 flex items-center justify-center text-emerald-950 hover:bg-gold-100 hover:border-gold-300 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-950/20 text-emerald-950 hover:bg-gold-100 hover:border-gold-300 transition-colors"
                 title="Share on WhatsApp"
               >
                 <WhatsAppIcon className="w-4 h-4" />
+                <span className="text-sm font-medium">WhatsApp</span>
               </button>
               <button 
                 onClick={() => {
@@ -233,10 +234,11 @@ export default function ProductDetail() {
                   setIsCopied(true);
                   setTimeout(() => setIsCopied(false), 2000);
                 }}
-                className="w-10 h-10 rounded-full border border-emerald-950/20 flex items-center justify-center text-emerald-950 hover:bg-gold-100 hover:border-gold-300 transition-colors relative"
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-950/20 text-emerald-950 hover:bg-gold-100 hover:border-gold-300 transition-colors"
                 title="Copy Link"
               >
                 {isCopied ? <Check className="w-4 h-4 text-emerald-600" /> : <Link2 className="w-4 h-4" />}
+                <span className="text-sm font-medium">{isCopied ? 'Copied!' : 'Copy Link'}</span>
               </button>
             </div>
 

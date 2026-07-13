@@ -113,11 +113,19 @@ export default function Layout() {
             </>
           ) : (
             <>
-              <button onClick={signInWithGoogle} className="hidden md:flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs tracking-widest font-medium shrink-0">
+              <button onClick={async () => {
+                try {
+                  await signInWithGoogle();
+                } catch (e) {}
+              }} className="hidden md:flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs tracking-widest font-medium shrink-0">
                 <User className="w-4 h-4" />
                 Sign In
               </button>
-              <button onClick={signInWithGoogle} className="md:hidden hover:text-gold-400 transition-colors shrink-0" title="Sign In">
+              <button onClick={async () => {
+                try {
+                  await signInWithGoogle();
+                } catch (e) {}
+              }} className="md:hidden hover:text-gold-400 transition-colors shrink-0" title="Sign In">
                 <User className="w-5 h-5" />
               </button>
             </>
@@ -186,8 +194,10 @@ export default function Layout() {
                 </>
               ) : (
                 <button 
-                  onClick={() => {
-                    signInWithGoogle();
+                  onClick={async () => {
+                    try {
+                      await signInWithGoogle();
+                    } catch (e) {}
                     setIsMobileMenuOpen(false);
                   }}
                   className="flex items-center gap-2 bg-gold-500 text-emerald-950 px-6 py-3 font-sans uppercase text-sm tracking-widest font-medium hover:bg-gold-400 transition-colors mt-4 justify-center"
