@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Lock, Loader2, ArrowLeft, Shield, LogIn, Trash2, Phone } from 'lucide-react';
+import { Lock, Loader2, ArrowLeft, Shield, LogIn, Trash2, Phone, Plus, Minus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { products } from '../data';
+import { products as hardcodedProducts, Product } from '../data';
 import { db, auth } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 
 export default function Checkout() {
-  const { items, cartCount, clearCart, removeFromCart } = useCart();
+  const { items, cartCount, clearCart, removeFromCart, updateQuantity } = useCart();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   
@@ -32,6 +32,9 @@ export default function Checkout() {
     postalCode: ''
   });
 
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+
   // Pre-fill email if user is logged in
   useEffect(() => {
     if (user && user.email) {
@@ -44,9 +47,44 @@ export default function Checkout() {
     }
   }, [user]);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      let pgProducts: Product[] = [];
+      let fbProducts: Product[] = [];
+      
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          pgProducts = data.map((item: any) => ({
+            ...item,
+            id: String(item.id),
+            stoneColor: item.stone_color || item.stoneColor,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch products from API:", err);
+      }
+      
+      try {
+        const querySnapshot = await getDocs(collection(db, 'products'));
+        fbProducts = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Product[];
+      } catch (fbErr) {
+        console.error("Failed to fetch from Firebase:", fbErr);
+      }
+      
+      setDbProducts([...hardcodedProducts, ...pgProducts, ...fbProducts]);
+      setProductsLoading(false);
+    };
+    fetchProducts();
+  }, []);
+
   // Hydrate cart items with product data
   const cartItems = items.map(item => {
-    const product = products.find(p => p.id === item.productId);
+    const product = dbProducts.find(p => String(p.id) === String(item.productId));
     return { ...item, product };
   }).filter(item => item.product !== undefined);
 
@@ -251,6 +289,14 @@ export default function Checkout() {
     );
   }
 
+  if (productsLoading) {
+    return (
+      <div className="pt-20 pb-24 flex justify-center min-h-[60vh] items-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
+      </div>
+    );
+  }
+
   if (!loading && !user) {
     return (
       <div className="pt-20 pb-24 px-6 md:px-12 text-center min-h-[60vh] max-w-2xl mx-auto flex flex-col items-center justify-center">
@@ -383,7 +429,7 @@ export default function Checkout() {
         <h1 className="text-3xl md:text-4xl font-serif text-emerald-950">Secure Checkout</h1>
       </div>
 
-      <div className="flex flex-col-reverse lg:flex-row gap-12 lg:gap-20">
+      <form onSubmit={handlePaymentSubmit} className="flex flex-col-reverse lg:flex-row gap-12 lg:gap-20">
         {/* Left Column: Forms */}
         <div className="flex-1 space-y-12">
           {/* Shipping Details */}
@@ -414,7 +460,7 @@ export default function Checkout() {
               <p className="text-gray-500 font-light mb-8 text-sm">You will be redirected to Razorpay secure checkout to complete your purchase. All major Credit/Debit cards, UPI, and Wallets are supported.</p>
               
               <button 
-                onClick={handlePaymentSubmit}
+                type="submit"
                 disabled={isProcessing}
                 className="w-full bg-emerald-950 hover:bg-emerald-900 disabled:bg-emerald-950/70 text-white py-5 flex items-center justify-center gap-2 uppercase tracking-widest font-medium text-sm transition-colors"
               >
@@ -444,14 +490,34 @@ export default function Checkout() {
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="text-emerald-950 font-medium text-sm mb-1 leading-snug">{item.product!.name}</h3>
                         <button 
+                          type="button"
                           onClick={() => removeFromCart(item.productId)}
-                          className="text-gray-400 hover:text-red-500 transition-colors md:opacity-0 md:group-hover:opacity-100 p-1"
+                          className="text-gray-400 hover:text-red-500 transition-colors p-1"
                           title="Remove item"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      <p className="text-xs text-gray-500 mb-2">Qty: {item.quantity}</p>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xs text-gray-500">Qty:</span>
+                        <div className="flex items-center border border-gray-200 rounded">
+                          <button 
+                            type="button"
+                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                            className="p-1 text-gray-500 hover:text-emerald-950 transition-colors"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-xs font-medium w-6 text-center">{item.quantity}</span>
+                          <button 
+                            type="button"
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                            className="p-1 text-gray-500 hover:text-emerald-950 transition-colors"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                     <p className="text-emerald-900 font-medium">₹{(item.product!.price * item.quantity).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
                   </div>
@@ -480,7 +546,7 @@ export default function Checkout() {
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

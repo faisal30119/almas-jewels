@@ -18,37 +18,35 @@ export default function Shop() {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      let pgProducts: Product[] = [];
+      let fbProducts: Product[] = [];
+      
       try {
         const res = await fetch('/api/products');
         if (res.ok) {
           const data = await res.json();
-          // Convert database fields from snake_case to camelCase if necessary
-          const formattedData = data.map((item: any) => ({
+          pgProducts = data.map((item: any) => ({
             ...item,
             id: String(item.id),
             stoneColor: item.stone_color || item.stoneColor,
           }));
-          setDbProducts([...hardcodedProducts, ...formattedData]);
-        } else {
-          throw new Error('Failed to fetch API products');
         }
       } catch (err) {
-        console.error("Failed to fetch products:", err);
-        // Fallback to Firebase
-        try {
-          const querySnapshot = await getDocs(collection(db, 'products'));
-          const fetched = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Product[];
-          setDbProducts([...hardcodedProducts, ...fetched]);
-        } catch (fbErr) {
-           console.error("Failed to fetch from Firebase:", fbErr);
-           setDbProducts(hardcodedProducts);
-        }
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to fetch products from API:", err);
       }
+      
+      try {
+        const querySnapshot = await getDocs(collection(db, 'products'));
+        fbProducts = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Product[];
+      } catch (fbErr) {
+        console.error("Failed to fetch from Firebase:", fbErr);
+      }
+      
+      setDbProducts([...hardcodedProducts, ...pgProducts, ...fbProducts]);
+      setIsLoading(false);
     };
     fetchProducts();
   }, []);

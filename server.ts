@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config({ override: true });
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
@@ -15,14 +17,12 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import crypto from "crypto";
 
-// Initialize Cloudinary conditionally
-if (process.env.CLOUDINARY_CLOUD_NAME) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-  });
-}
+// Initialize Cloudinary with environment variables or fallbacks
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME !== 'alc_mahmood@8' ? process.env.CLOUDINARY_CLOUD_NAME : 'niagn9pn',
+  api_key: process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_KEY !== 'alc_mahmood@8' ? process.env.CLOUDINARY_API_KEY : '738543779546239',
+  api_secret: process.env.CLOUDINARY_API_SECRET && process.env.CLOUDINARY_API_SECRET !== 'alc_mahmood@8' ? process.env.CLOUDINARY_API_SECRET : 'wVRhdaov4Fg4urDDuN6LnaX7P4A'
+});
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -130,10 +130,6 @@ async function startServer() {
   app.post("/api/admin/upload", requireAdmin, upload.single("file"), async (req: AuthRequest, res) => {
     if (!req.file) {
       res.status(400).json({ error: "No file uploaded" });
-      return;
-    }
-    if (!process.env.CLOUDINARY_CLOUD_NAME) {
-      res.status(500).json({ error: "Cloudinary is not configured. Add keys in Settings." });
       return;
     }
 
@@ -260,12 +256,7 @@ async function startServer() {
 
     const client = getRazorpayClient();
     if (!client) {
-      // For development/mock purposes if keys aren't set
-      res.json({ 
-        id: `mock_order_${Math.random().toString(36).substring(7)}`,
-        amount: amount * 100, // convert to paise
-        currency 
-      });
+      res.status(500).json({ error: "Razorpay is not configured. Add keys in Settings." });
       return;
     }
 
@@ -279,15 +270,6 @@ async function startServer() {
       res.json(order);
     } catch (error: any) {
       console.error("Razorpay order creation error:", error);
-      if (error.statusCode === 401 || error.statusCode === 400 || (error.error && error.error.code === 'BAD_REQUEST_ERROR')) {
-        console.log("Razorpay auth failed, falling back to mock order.");
-        res.json({ 
-          id: `mock_order_${Math.random().toString(36).substring(7)}`,
-          amount: amount * 100,
-          currency 
-        });
-        return;
-      }
       res.status(500).json({ error: "Failed to create payment order" });
     }
   });

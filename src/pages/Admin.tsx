@@ -19,6 +19,7 @@ export default function Admin() {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    stock: '',
     image: '',
     category: categories[0],
     stoneColor: stoneColors[0],
@@ -47,6 +48,7 @@ export default function Admin() {
       await addDoc(collection(firebaseDb, 'products'), {
         name: formData.name,
         price: Number(formData.price),
+        stock: Number(formData.stock),
         image: formData.image || 'https://images.unsplash.com/photo-1599643478514-4a410f081467?q=80&w=600&auto=format&fit=crop', // default placeholder
         category: formData.category,
         stoneColor: formData.stoneColor,
@@ -59,6 +61,7 @@ export default function Admin() {
       setFormData({
         name: '',
         price: '',
+        stock: '',
         image: '',
         category: categories[0],
         stoneColor: stoneColors[0],
@@ -187,7 +190,7 @@ export default function Admin() {
             )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                 <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded focus:border-gold-500 focus:outline-none" />
               </div>
@@ -195,9 +198,58 @@ export default function Admin() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
                 <input required type="number" name="price" value={formData.price} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded focus:border-gold-500 focus:outline-none" />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                <input required type="number" name="stock" value={formData.stock} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded focus:border-gold-500 focus:outline-none" />
+              </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
-                <input type="url" name="image" value={formData.image} onChange={handleChange} placeholder="https://..." className="w-full border border-gray-300 p-2 rounded focus:border-gold-500 focus:outline-none" />
+                <div className="flex gap-4 items-center">
+                  <input type="url" name="image" value={formData.image} onChange={handleChange} placeholder="https://..." className="flex-1 border border-gray-300 p-2 rounded focus:border-gold-500 focus:outline-none" />
+                  <span className="text-gray-400">or</span>
+                  <label className="bg-gray-100 px-4 py-2 rounded border border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-700">{loading ? 'Uploading...' : 'Upload Image'}</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        setLoading(true);
+                        const uploadData = new FormData();
+                        uploadData.append('file', file);
+                        
+                        try {
+                          const token = await user?.getIdToken();
+                          const res = await fetch('/api/admin/upload', {
+                            method: 'POST',
+                            headers: {
+                              'Authorization': `Bearer ${token}`
+                            },
+                            body: uploadData
+                          });
+                          const data = await res.json();
+                          if (data.url) {
+                            setFormData(prev => ({ ...prev, image: data.url }));
+                          } else {
+                            throw new Error(data.error || 'Failed to upload image');
+                          }
+                        } catch (err: any) {
+                          alert(`Error uploading image: ${err.message}`);
+                        } finally {
+                          setLoading(false);
+                        }
+                      }} 
+                    />
+                  </label>
+                </div>
+                {formData.image && (
+                  <div className="mt-3">
+                    <img src={formData.image} alt="Preview" className="w-24 h-24 object-cover rounded border border-gray-200 shadow-sm" />
+                  </div>
+                )}
               </div>
               
               <div>
