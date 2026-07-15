@@ -297,7 +297,7 @@ async function startServer() {
     const emailHtml = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #064e3b;">Payment Successful!</h2>
-        <p>Thank you for your order at Almas Bridal.</p>
+        <p>Thank you for your order at Almas Jewels.</p>
         <p><strong>Order ID:</strong> ${orderId}</p>
         <p><strong>Amount:</strong> ₹${amount}</p>
         <p>We are processing your elegant pieces and will notify you when they ship.</p>
@@ -318,7 +318,7 @@ async function startServer() {
 
       if (process.env.SMTP_USER) {
         await transporter.sendMail({
-          from: '"Almas Bridal" <orders@almasbridal.com>',
+          from: '"Almas Jewels" <orders@almasjewels.com>',
           to: email,
           subject: `Order Confirmation - ${orderId}`,
           html: emailHtml
@@ -342,7 +342,7 @@ async function startServer() {
         const formattedFrom = fromNumber.startsWith('whatsapp:') ? fromNumber : `whatsapp:${fromNumber}`;
 
         await twilioClient.messages.create({
-          body: `*Almas Bridal Order Confirmation*\n\nThank you for your order!\n\n*Order ID:* ${orderId}\n*Amount:* ₹${amount}\n\nYour elegant pieces are being prepared.`,
+          body: `*Almas Jewels Order Confirmation*\n\nThank you for your order!\n\n*Order ID:* ${orderId}\n*Amount:* ₹${amount}\n\nYour elegant pieces are being prepared.`,
           from: formattedFrom,
           to: formattedTo
         });

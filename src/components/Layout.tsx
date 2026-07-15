@@ -79,7 +79,7 @@ export default function Layout() {
         {/* Left: Logo */}
         <div className="flex-1 flex justify-start">
           <Link to="/" className="text-2xl font-serif font-bold tracking-widest uppercase shrink-0">
-            Almas Bridal
+            Almas Jewels
           </Link>
         </div>
         
@@ -214,7 +214,7 @@ export default function Layout() {
                   <span>@almasladiescorner</span>
                 </a>
               </div>
-              <p className="text-center">&copy; {new Date().getFullYear()} Almas Bridal.</p>
+              <p className="text-center">&copy; {new Date().getFullYear()} Almas Jewels.</p>
             </div>
           </motion.div>
         )}
@@ -273,7 +273,7 @@ export default function Layout() {
 
             <div className="lg:pl-20 lg:border-l border-white/10 flex flex-col justify-between">
               <div>
-                <h3 className="text-2xl font-serif font-bold tracking-widest uppercase mb-8">Almas Bridal</h3>
+                <h3 className="text-2xl font-serif font-bold tracking-widest uppercase mb-8">Almas Jewels</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 text-sm text-white/60 font-light">
                   <ul className="space-y-4">
                     <li><Link to="/shop" className="hover:text-gold-400 transition-colors">Shop All</Link></li>
@@ -294,7 +294,7 @@ export default function Layout() {
                 </div>
               </div>
               <div className="mt-16 flex flex-col-reverse md:flex-row items-center justify-between gap-6 md:gap-0 pt-8 border-t border-white/10 text-xs text-white/40 font-light">
-                <p className="text-center md:text-left">&copy; {new Date().getFullYear()} Almas Bridal. All rights reserved.</p>
+                <p className="text-center md:text-left">&copy; {new Date().getFullYear()} Almas Jewels. All rights reserved.</p>
                 <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center">
                   <a href="https://instagram.com/almasladiescorner" target="_blank" rel="noopener noreferrer" className="hover:text-gold-400 transition-colors flex items-center gap-2">
                     <Instagram className="w-4 h-4" />

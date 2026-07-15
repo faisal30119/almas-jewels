@@ -210,7 +210,7 @@ export default function ProductDetail() {
               <span className="text-xs uppercase tracking-widest text-gray-400">Share:</span>
               <button 
                 onClick={() => {
-                  const text = `Check out this beautiful jewelry piece from Almas Bridal: ${product.name} - ₹${product.price.toLocaleString('en-IN')}\n\n${window.location.href}`;
+                  const text = `Check out this beautiful jewelry piece from Almas Jewels: ${product.name} - ₹${product.price.toLocaleString('en-IN')}\n\n${window.location.href}`;
                   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
                 }}
                 className="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-950/20 text-emerald-950 hover:bg-gold-100 hover:border-gold-300 transition-colors"

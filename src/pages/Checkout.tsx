@@ -1,3 +1,10 @@
+declare global {
+  interface Window {
+    recaptchaVerifier: any;
+    grecaptcha: any;
+    Razorpay: any;
+  }
+}
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -7,20 +14,13 @@ import { useAuth } from '../context/AuthContext';
 import { products as hardcodedProducts, Product } from '../data';
 import { db, auth } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+
 
 export default function Checkout() {
   const { items, cartCount, clearCart, removeFromCart, updateQuantity } = useCart();
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   
-  const [loginMethod, setLoginMethod] = useState<'google' | 'phone' | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const [phoneLoading, setPhoneLoading] = useState(false);
-  const [phoneError, setPhoneError] = useState('');
-  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [shippingDetails, setShippingDetails] = useState({
     firstName: '',
@@ -97,63 +97,6 @@ export default function Checkout() {
     setShippingDetails(prev => ({ ...prev, [name]: value }));
   };
 
-  const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible'
-      });
-    }
-  };
-
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!phoneNumber) {
-      setPhoneError("Please enter a valid phone number");
-      return;
-    }
-    setPhoneError('');
-    setPhoneLoading(true);
-    
-    try {
-      setupRecaptcha();
-      const appVerifier = window.recaptchaVerifier;
-      const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-      setConfirmationResult(confirmation);
-    } catch (error: any) {
-      if (error.code === 'auth/operation-not-allowed') {
-        setPhoneError("Phone authentication is not enabled. Please enable it in the Firebase Console -> Authentication -> Sign-in method.");
-      } else {
-        console.error(error);
-        setPhoneError(error.message || "Failed to send OTP. Please try again.");
-      }
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.render().then((widgetId: any) => {
-          (window as any).grecaptcha.reset(widgetId);
-        });
-      }
-    } finally {
-      setPhoneLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp || !confirmationResult) return;
-    
-    setPhoneError('');
-    setPhoneLoading(true);
-    
-    try {
-      await confirmationResult.confirm(otp);
-      // Auth context will automatically handle the user state update
-    } catch (error: any) {
-      console.error(error);
-      setPhoneError(error.message || "Invalid OTP. Please try again.");
-    } finally {
-      setPhoneLoading(false);
-    }
-  };
 
   const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,7 +149,7 @@ export default function Checkout() {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock', // Fallback for dev if not using real key
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "Almas Bridal",
+        name: "Almas Jewels",
         description: "Test Transaction",
         image: "https://images.unsplash.com/photo-1599643478514-4a410f135b5a?w=100&h=100&fit=crop", // Add a small logo
         order_id: orderData.id,
@@ -297,129 +240,6 @@ export default function Checkout() {
     );
   }
 
-  if (!loading && !user) {
-    return (
-      <div className="pt-20 pb-24 px-6 md:px-12 text-center min-h-[60vh] max-w-2xl mx-auto flex flex-col items-center justify-center">
-        <Shield className="w-16 h-16 text-emerald-950/20 mb-6" />
-        <h2 className="text-3xl font-serif text-emerald-950 mb-4">Sign in to Checkout</h2>
-        <p className="text-gray-500 font-light mb-8 text-lg">Please sign in or create an account to securely complete your purchase and track your order.</p>
-        
-        <div className="w-full max-w-md space-y-4">
-          {!loginMethod && (
-            <div className="flex flex-col gap-4">
-              <button 
-                onClick={async () => {
-                  try {
-                    await signInWithGoogle();
-                  } catch (e) {}
-                }}
-                className="w-full flex items-center justify-center gap-3 bg-emerald-950 hover:bg-emerald-900 text-white px-8 py-4 uppercase tracking-widest text-sm font-medium transition-colors"
-              >
-                <LogIn className="w-5 h-5" />
-                Continue with Google
-              </button>
-              
-              <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
-                <div className="flex-grow border-t border-gray-300"></div>
-              </div>
-
-              <button 
-                onClick={() => setLoginMethod('phone')}
-                className="w-full flex items-center justify-center gap-3 border border-emerald-950 text-emerald-950 hover:bg-emerald-50 px-8 py-4 uppercase tracking-widest text-sm font-medium transition-colors"
-              >
-                <Phone className="w-5 h-5" />
-                Continue with Phone
-              </button>
-            </div>
-          )}
-
-          {loginMethod === 'phone' && (
-            <div className="bg-white p-6 md:p-8 border border-gray-200 text-left">
-              <div className="flex items-center gap-3 mb-6">
-                <button onClick={() => {
-                  setLoginMethod(null);
-                  setConfirmationResult(null);
-                  setPhoneNumber('');
-                  setOtp('');
-                  setPhoneError('');
-                }} className="text-gray-400 hover:text-emerald-950 transition-colors">
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <h3 className="text-xl font-serif text-emerald-950">Phone Sign In</h3>
-              </div>
-              
-              {phoneError && <p className="text-red-500 text-sm mb-4">{phoneError}</p>}
-              
-              {!confirmationResult ? (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2 font-medium">Phone Number</label>
-                    <div className="flex">
-                      <span className="inline-flex items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 sm:text-sm">
-                        +91
-                      </span>
-                      <input 
-                        type="tel" 
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                        placeholder="10-digit mobile number" 
-                        className="flex-1 block w-full bg-white border border-gray-200 p-3 focus:outline-none focus:border-emerald-950 transition-colors font-light" 
-                        required 
-                        maxLength={10}
-                      />
-                    </div>
-                  </div>
-                  <button 
-                    type="submit" 
-                    disabled={phoneLoading || phoneNumber.length < 10}
-                    className="w-full bg-emerald-950 hover:bg-emerald-900 disabled:bg-emerald-950/70 text-white py-3 flex items-center justify-center gap-2 uppercase tracking-widest font-medium text-sm transition-colors"
-                  >
-                    {phoneLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP'}
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2 font-medium">Enter OTP sent to +91 {phoneNumber}</label>
-                    <input 
-                      type="text" 
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      placeholder="6-digit OTP" 
-                      className="w-full bg-white border border-gray-200 p-3 text-center tracking-[1em] focus:outline-none focus:border-emerald-950 transition-colors font-light" 
-                      required 
-                      maxLength={6}
-                    />
-                  </div>
-                  <button 
-                    type="submit" 
-                    disabled={phoneLoading || otp.length < 6}
-                    className="w-full bg-emerald-950 hover:bg-emerald-900 disabled:bg-emerald-950/70 text-white py-3 flex items-center justify-center gap-2 uppercase tracking-widest font-medium text-sm transition-colors"
-                  >
-                    {phoneLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Sign In'}
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setConfirmationResult(null);
-                      setOtp('');
-                    }}
-                    className="w-full text-center text-sm text-emerald-950 font-medium pt-2"
-                  >
-                    Change Phone Number
-                  </button>
-                </form>
-              )}
-              <div id="recaptcha-container" ref={recaptchaContainerRef}></div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="pt-12 pb-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
       <div className="mb-12">
@@ -432,6 +252,30 @@ export default function Checkout() {
       <form onSubmit={handlePaymentSubmit} className="flex flex-col-reverse lg:flex-row gap-12 lg:gap-20">
         {/* Left Column: Forms */}
         <div className="flex-1 space-y-12">
+          
+          {!user && !loading && (
+            <section className="bg-emerald-50 p-6 border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="font-serif text-emerald-950 text-lg mb-1">Already have an account?</h3>
+                <p className="text-sm text-gray-600 font-light">Sign in for faster checkout and tracking.</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button 
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await signInWithGoogle();
+                    } catch (e) {}
+                  }}
+                  className="flex items-center justify-center gap-2 bg-white text-emerald-950 border border-emerald-950 px-6 py-2 uppercase tracking-widest text-xs font-medium hover:bg-emerald-950 hover:text-white transition-colors"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Google
+                </button>
+              </div>
+            </section>
+          )}
+
           {/* Shipping Details */}
           <section>
             <h2 className="text-xl font-serif text-emerald-950 mb-6 flex items-center gap-2">

@@ -32,7 +32,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/40 via-transparent to-emerald-950/80 z-10" />
           <img 
             src={heroBrideImg} 
-            alt="Elegant Bride wearing Almas Bridal Jewelry" 
+            alt="Elegant Bride wearing Almas Jewels Jewelry" 
             className="w-full h-full object-cover object-center"
           />
         </div>
