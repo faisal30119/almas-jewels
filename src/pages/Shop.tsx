@@ -55,9 +55,12 @@ export default function Shop() {
   const activeStone = searchParams.get('stone');
   const activePlating = searchParams.get('plating');
   const activePriceRange = searchParams.get('price');
+  const activeSort = searchParams.get('sort') || 'featured';
+  const activeSearch = searchParams.get('search')?.toLowerCase() || '';
 
   const filteredProducts = useMemo(() => {
-    return dbProducts.filter(p => {
+    let result = dbProducts.filter(p => {
+      if (activeSearch && !p.name.toLowerCase().includes(activeSearch)) return false;
       if (activeCategory && p.category !== activeCategory) return false;
       if (activeStone && p.stoneColor !== activeStone) return false;
       if (activePlating && p.plating !== activePlating) return false;
@@ -69,7 +72,15 @@ export default function Shop() {
       }
       return true;
     });
-  }, [activeCategory, activeStone, activePlating, activePriceRange, dbProducts]);
+
+    if (activeSort === 'price-asc') {
+      result = [...result].sort((a, b) => a.price - b.price);
+    } else if (activeSort === 'price-desc') {
+      result = [...result].sort((a, b) => b.price - a.price);
+    }
+
+    return result;
+  }, [activeCategory, activeStone, activePlating, activePriceRange, activeSort, activeSearch, dbProducts]);
 
   const updateFilter = (key: string, value: string | null) => {
     const newParams = new URLSearchParams(searchParams);
@@ -104,20 +115,37 @@ export default function Shop() {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-12">
-        {/* Mobile Filter Toggle */}
-        <button 
-          className="lg:hidden flex items-center gap-2 text-emerald-950 font-medium uppercase tracking-widest text-sm border-b border-emerald-950/20 pb-2 w-max"
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
-        >
-          <Filter className="w-4 h-4" /> Filters
-        </button>
+        {/* Mobile Filter Toggle & Header */}
+        <div className="lg:hidden flex items-center justify-between border-b border-emerald-950/20 pb-4">
+          <button 
+            className="flex items-center gap-2 text-emerald-950 font-medium tracking-wide text-sm"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+          >
+            <Filter className="w-4 h-4" /> Filter and sort
+          </button>
+          <span className="text-gray-500 text-sm font-light">{filteredProducts.length} products</span>
+        </div>
 
         {/* Filters Sidebar */}
         <aside className={cn(
           "lg:w-64 flex-shrink-0 transition-all duration-300 overflow-hidden",
-          isFilterOpen ? "max-h-screen" : "max-h-0 lg:max-h-full"
+          isFilterOpen ? "max-h-[2000px]" : "max-h-0 lg:max-h-full"
         )}>
           <div className="space-y-10">
+            {/* Sort Filter */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-950 mb-4">Sort By</h3>
+              <select
+                value={activeSort}
+                onChange={(e) => updateFilter('sort', e.target.value)}
+                className="w-full border border-gray-200 p-3 bg-white text-gray-700 text-sm focus:outline-none focus:border-emerald-950 font-light"
+              >
+                <option value="featured">Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+              </select>
+            </div>
+
             {/* Category Filter */}
             <div>
               <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-950 mb-4">Type</h3>
@@ -210,6 +238,10 @@ export default function Shop() {
 
         {/* Product Grid */}
         <div className="flex-1">
+          <div className="hidden lg:flex items-center justify-between mb-8">
+            <h2 className="text-xl font-serif text-emerald-950">Collection</h2>
+            <span className="text-gray-500 font-light text-sm">{filteredProducts.length} products</span>
+          </div>
           {isLoading ? (
             <div className="flex justify-center py-20">
               <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
@@ -219,8 +251,11 @@ export default function Shop() {
               No products found matching your criteria.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-12">
-              {filteredProducts.map((product, idx) => (
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8 lg:gap-12">
+              {filteredProducts.map((product, idx) => {
+                const discount = 40 + (String(product.id).charCodeAt(0) % 20);
+                const oldPrice = Math.round(product.price / (1 - discount / 100));
+                return (
                 <motion.div 
                   key={product.id}
                   initial="hidden"
@@ -235,27 +270,32 @@ export default function Shop() {
                       e.stopPropagation();
                       toggleWishlist(product);
                     }}
-                    className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-emerald-950 hover:bg-white transition-colors shadow-sm"
+                    className="absolute top-2 right-2 md:top-4 md:right-4 z-20 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-emerald-950 hover:bg-white transition-colors shadow-sm"
                   >
-                    <Heart className={cn("w-5 h-5 transition-all duration-300", isInWishlist(product.id) ? "fill-gold-500 text-gold-500" : "hover:scale-110")} />
+                    <Heart className={cn("w-4 h-4 md:w-5 md:h-5 transition-all duration-300", isInWishlist(product.id) ? "fill-gold-500 text-gold-500" : "hover:scale-110")} />
                   </button>
                   <Link to={`/product/${product.id}`} className="block">
-                    <div className="overflow-hidden aspect-[4/5] relative mb-6 bg-gray-100">
+                    <div className="overflow-hidden aspect-[4/5] relative mb-3 md:mb-4 bg-gray-100 rounded-lg md:rounded-xl">
                       <div className="absolute inset-0 bg-emerald-950/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+                      <div className="absolute top-2 left-2 md:top-4 md:left-4 z-20 bg-emerald-950/80 text-white text-[10px] md:text-xs px-2 md:px-3 py-1 md:py-1.5 rounded-full backdrop-blur-sm font-medium tracking-wide">
+                        -{discount}%
+                      </div>
                       <img 
                         src={product.image} 
                         alt={product.name} 
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                       />
                     </div>
-                    <div className="text-center px-4">
-                      <h3 className="text-lg font-serif text-emerald-950 mb-2 group-hover:text-gold-600 transition-colors">{product.name}</h3>
-                      <p className="text-sm text-gray-500 font-light mb-2">{product.stoneColor} • {product.plating}</p>
-                      <p className="text-emerald-900 font-medium tracking-wide">₹{product.price.toLocaleString('en-IN')}</p>
+                    <div className="text-center px-1 md:px-2">
+                      <h3 className="text-xs md:text-base font-serif text-emerald-950 mb-1 group-hover:text-gold-600 transition-colors truncate">{product.name}</h3>
+                      <div className="flex flex-col items-center gap-0.5 md:gap-1 mt-1 md:mt-2">
+                        <span className="text-[11px] md:text-sm text-gray-500 line-through decoration-gray-400">Rs. {oldPrice.toLocaleString('en-IN')}.00</span>
+                        <span className="text-sm md:text-lg text-emerald-900 font-semibold tracking-wide">Rs. {product.price.toLocaleString('en-IN')}.00</span>
+                      </div>
                     </div>
                   </Link>
                 </motion.div>
-              ))}
+              )})}
             </div>
           )}
         </div>

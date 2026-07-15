@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, User, LogOut, Instagram, Menu, X, Check } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Instagram, Menu, X, Check, Search } from 'lucide-react';
 import { WhatsAppIcon } from './icons';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +17,31 @@ export default function Layout() {
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setSearchQuery(params.get('search') || '');
+  }, [location.search]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    if (val) {
+      const params = new URLSearchParams(location.search);
+      params.set('search', val);
+      navigate(`/shop?${params.toString()}`);
+    } else {
+      if (location.pathname === '/shop') {
+        const params = new URLSearchParams(location.search);
+        params.delete('search');
+        navigate(`/shop?${params.toString()}`);
+      }
+    }
+  };
 
   // Inquiry form state
   const [inquiryName, setInquiryName] = useState('');
@@ -67,8 +92,9 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-emerald-950 font-sans selection:bg-gold-500 selection:text-white flex flex-col">
-      <nav className={cn(
+    <>
+      <div className="min-h-screen bg-[#FAFAFA] text-emerald-950 font-sans selection:bg-gold-500 selection:text-white flex flex-col">
+        <nav className={cn(
         "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-5 md:px-12 lg:px-24 transition-all duration-300 border-b",
         isHome 
           ? (isScrolled || isMobileMenuOpen)
@@ -92,6 +118,49 @@ export default function Layout() {
         
         {/* Right: Icons & Actions */}
         <div className="flex-1 flex justify-end items-center gap-4 md:gap-6">
+          <div className="relative flex items-center">
+            {isSearchOpen ? (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 200, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                className="relative"
+              >
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="w-full bg-transparent border-b border-white/30 focus:border-gold-400 text-sm text-white placeholder:text-white/50 px-2 py-1 outline-none transition-colors"
+                  autoFocus
+                />
+                <button
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    if (searchQuery) {
+                      setSearchQuery('');
+                      if (location.pathname === '/shop') {
+                        const params = new URLSearchParams(location.search);
+                        params.delete('search');
+                        navigate(`/shop?${params.toString()}`);
+                      }
+                    }
+                  }}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </motion.div>
+            ) : (
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="hover:text-gold-400 transition-colors shrink-0"
+                title="Search"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+            )}
+          </div>
           {user ? (
             <>
               <div className="hidden md:flex items-center gap-4">
@@ -307,6 +376,20 @@ export default function Layout() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+      {/* Floating WhatsApp Button */}
+      <a 
+        href="https://wa.me/919973819387" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-[9999] bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:scale-110 transition-transform duration-300 flex items-center justify-center group"
+        aria-label="Chat on WhatsApp"
+      >
+        <WhatsAppIcon className="w-8 h-8" />
+        <span className="absolute right-full mr-4 bg-white text-gray-800 text-sm py-2 px-4 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+          Need help? Chat with us
+        </span>
+      </a>
+    </>
   );
 }
