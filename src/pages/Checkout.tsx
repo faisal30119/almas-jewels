@@ -22,6 +22,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [shippingDetails, setShippingDetails] = useState({
     firstName: '',
     lastName: '',
@@ -134,13 +135,16 @@ export default function Checkout() {
         body: JSON.stringify({
           amount: total,
           currency: "INR",
+          items: cartItems.map(i => ({ productId: i.id || i.productId, quantity: i.quantity, price: i.price })),
+          shippingDetails,
+          userId: user ? user.uid : null
         }),
       });
 
       const orderData = await orderResponse.json();
 
       if (orderData.error) {
-        alert(orderData.error);
+        setPaymentError(orderData.error);
         setIsProcessing(false);
         return;
       }
@@ -150,14 +154,14 @@ export default function Checkout() {
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Almas Jewels",
-        description: "Test Transaction",
+        description: "Your Dream Jewelry Purchase",
         image: "https://images.unsplash.com/photo-1599643478514-4a410f135b5a?w=100&h=100&fit=crop", // Add a small logo
         order_id: orderData.id,
         handler: async function (response: any) {
           // Verify payment success here (ideally server-side)
           console.log("Payment Successful", response);
           
-          const orderId = response.razorpay_order_id || `#AB-${Math.floor(1000 + Math.random() * 9000)}`;
+          const orderId = response.razorpay_order_id || orderData.id;
           
           try {
             if (user) {
@@ -166,7 +170,7 @@ export default function Checkout() {
                 orderId: orderId,
                 amount: total,
                 items: cartItems.map(item => ({
-                  id: item.id,
+                  id: item.id || item.productId,
                   name: item.name,
                   quantity: item.quantity,
                   price: item.price
@@ -205,20 +209,123 @@ export default function Checkout() {
           color: "#064e3b", // emerald-950
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: async function() {
             setIsProcessing(false);
+            setPaymentError("Payment was cancelled");
+            try {
+              if (user) {
+                await addDoc(collection(db, 'orders'), {
+                  userId: user.uid,
+                  orderId: orderData.id,
+                  amount: total,
+                  items: cartItems.map(item => ({
+                    id: item.id || item.productId,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                  })),
+                  status: 'failed payment',
+                  shippingDetails,
+                  error: "User cancelled",
+                  createdAt: serverTimestamp()
+                });
+              }
+              await fetch('/api/payment/failed', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderId: orderData.id,
+                  error: "User cancelled"
+                })
+              });
+            } catch (e) {
+              console.error(e);
+            }
           }
         }
       };
 
       const paymentObject = new (window as any).Razorpay(options);
+      
+      paymentObject.on('payment.failed', async function (response: any) {
+        console.error("Payment failed", response.error);
+        setPaymentError(response.error.description);
+        
+        try {
+          if (user) {
+            await addDoc(collection(db, 'orders'), {
+              userId: user.uid,
+              orderId: orderData.id,
+              amount: total,
+              items: cartItems.map(item => ({
+                id: item.id || item.productId,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+              })),
+              status: 'Failed',
+              shippingDetails,
+              error: response.error.description,
+              createdAt: serverTimestamp()
+            });
+          }
+
+          await fetch('/api/payment/failed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: orderData.id,
+              error: response.error.description,
+              paymentId: response.error.metadata.payment_id
+            })
+          });
+        } catch(e) {
+          console.error("Failed to process failure hook", e);
+        }
+        
+        setIsProcessing(false);
+      });
+
       paymentObject.open();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment failed", error);
+      setPaymentError(error.message || "Failed to initialize payment gateway");
       setIsProcessing(false);
     }
   };
+
+  if (paymentError) {
+    return (
+      <div className="pt-20 pb-24 text-center min-h-[60vh] flex flex-col items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 md:p-12 shadow-xl border border-red-100 max-w-md w-full mx-4 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-red-500"></div>
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </div>
+          <h2 className="text-2xl font-serif text-emerald-950 mb-2">Payment Failed</h2>
+          <p className="text-gray-600 font-light mb-8 text-sm">
+            We couldn't process your payment. Reason: <br />
+            <span className="font-medium text-red-600">{paymentError}</span>
+          </p>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={() => setPaymentError(null)}
+              className="bg-emerald-950 hover:bg-emerald-900 text-white py-4 uppercase tracking-widest text-sm font-medium transition-colors w-full"
+            >
+              Try Again
+            </button>
+            <button 
+              onClick={() => { setPaymentError(null); navigate('/shop'); }}
+              className="bg-transparent border border-emerald-950 text-emerald-950 hover:bg-emerald-50 py-4 uppercase tracking-widest text-sm font-medium transition-colors w-full"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (cartCount === 0) {
     return (

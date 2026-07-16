@@ -9,6 +9,7 @@ export default defineConfig({
     user: process.env.SQL_USER,
     password: process.env.SQL_PASSWORD,
     database: process.env.SQL_DB_NAME as string,
+    ssl: true,
   } : {
     url: process.env.DATABASE_URL || 'postgres://user:pass@localhost:5432/db',
   },

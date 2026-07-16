@@ -199,15 +199,31 @@ export default function Home() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative aspect-video w-full bg-emerald-900 cursor-pointer group"
+            className="relative aspect-video w-full bg-emerald-900 cursor-pointer group overflow-hidden"
+            onClick={(e) => {
+              const video = e.currentTarget.querySelector('video');
+              const playIcon = e.currentTarget.querySelector('.play-icon-container');
+              if (video) {
+                if (video.paused) {
+                  video.play();
+                  if (playIcon) playIcon.classList.add('opacity-0');
+                } else {
+                  video.pause();
+                  if (playIcon) playIcon.classList.remove('opacity-0');
+                }
+              }
+            }}
           >
-            <img 
-              src={videoThumbnailImg} 
-              alt="Video Thumbnail" 
-              className="w-full h-full object-cover opacity-60 group-hover:opacity-50 transition-opacity duration-500"
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 border border-white/20">
+            <video
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+              poster={videoThumbnailImg}
+              loop
+              playsInline
+            >
+              <source src="https://cdn.pixabay.com/video/2020/06/15/42079-429990835_large.mp4" type="video/mp4" />
+            </video>
+            <div className="play-icon-container absolute inset-0 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
+              <div className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 border border-white/20 shadow-lg">
                 <Play className="w-8 h-8 text-white fill-white ml-1" />
               </div>
             </div>

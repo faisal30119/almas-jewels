@@ -43,37 +43,6 @@ export default function Layout() {
     }
   };
 
-  // Inquiry form state
-  const [inquiryName, setInquiryName] = useState('');
-  const [inquiryEmail, setInquiryEmail] = useState('');
-  const [inquiryDate, setInquiryDate] = useState('');
-  const [isSendingInquiry, setIsSendingInquiry] = useState(false);
-  const [inquirySent, setInquirySent] = useState(false);
-
-  const handleInquirySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inquiryName || !inquiryEmail) return;
-    
-    setIsSendingInquiry(true);
-    try {
-      await addDoc(collection(db, 'inquiries'), {
-        name: inquiryName,
-        email: inquiryEmail,
-        weddingDate: inquiryDate,
-        createdAt: new Date().toISOString()
-      });
-      setInquirySent(true);
-      setInquiryName('');
-      setInquiryEmail('');
-      setInquiryDate('');
-      setTimeout(() => setInquirySent(false), 5000);
-    } catch (error) {
-      console.error("Failed to send inquiry", error);
-    } finally {
-      setIsSendingInquiry(false);
-    }
-  };
-
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -95,7 +64,7 @@ export default function Layout() {
     <>
       <div className="min-h-screen bg-[#FAFAFA] text-emerald-950 font-sans selection:bg-gold-500 selection:text-white flex flex-col">
         <nav className={cn(
-        "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-5 md:px-12 lg:px-24 transition-all duration-300 border-b",
+        "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-4 md:px-12 lg:px-24 transition-all duration-300 border-b gap-2",
         isHome 
           ? (isScrolled || isMobileMenuOpen)
             ? "bg-emerald-950/95 backdrop-blur-md text-white shadow-md border-white/10" 
@@ -103,8 +72,8 @@ export default function Layout() {
           : "bg-emerald-950/95 backdrop-blur-md text-white shadow-md border-white/10"
       )}>
         {/* Left: Logo */}
-        <div className="flex-1 flex justify-start">
-          <Link to="/" className="text-2xl font-serif font-bold tracking-widest uppercase shrink-0">
+        <div className={cn("flex justify-start overflow-hidden transition-all duration-300", isSearchOpen ? "hidden sm:flex sm:flex-1 pr-2" : "flex-1 pr-2")}>
+          <Link to="/" className="text-lg sm:text-xl md:text-2xl font-serif font-bold tracking-widest uppercase shrink-0 truncate">
             Almas Jewels
           </Link>
         </div>
@@ -117,87 +86,81 @@ export default function Layout() {
         </div>
         
         {/* Right: Icons & Actions */}
-        <div className="flex-1 flex justify-end items-center gap-4 md:gap-6">
-          <div className="relative flex items-center">
-            {isSearchOpen ? (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 200, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                className="relative"
-              >
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="w-full bg-transparent border-b border-white/30 focus:border-gold-400 text-sm text-white placeholder:text-white/50 px-2 py-1 outline-none transition-colors"
-                  autoFocus
-                />
-                <button
-                  onClick={() => {
-                    setIsSearchOpen(false);
-                    if (searchQuery) {
-                      setSearchQuery('');
-                      if (location.pathname === '/shop') {
-                        const params = new URLSearchParams(location.search);
-                        params.delete('search');
-                        navigate(`/shop?${params.toString()}`);
-                      }
-                    }
-                  }}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+        <div className="flex flex-1 justify-end items-center gap-3 md:gap-6">
+          <div className="relative flex items-center h-6">
+            <AnimatePresence mode="wait">
+              {isSearchOpen ? (
+                <motion.div
+                  key="search-input"
+                  initial={{ maxWidth: 0, opacity: 0 }}
+                  animate={{ maxWidth: 250, opacity: 1 }}
+                  exit={{ maxWidth: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative w-[100px] sm:w-[140px] md:w-[200px] overflow-hidden flex items-center"
                 >
-                  <X className="w-4 h-4" />
-                </button>
-              </motion.div>
-            ) : (
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="hover:text-gold-400 transition-colors shrink-0"
-                title="Search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-            )}
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="w-full bg-transparent border-b border-white/30 focus:border-gold-400 text-sm text-white placeholder:text-white/50 px-1 py-1 pr-6 outline-none transition-colors"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      if (searchQuery) {
+                        setSearchQuery('');
+                        if (location.pathname === '/shop') {
+                          const params = new URLSearchParams(location.search);
+                          params.delete('search');
+                          navigate(`/shop?${params.toString()}`);
+                        }
+                      }
+                    }}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="search-btn"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsSearchOpen(true)}
+                  className="hover:text-gold-400 transition-colors shrink-0"
+                  title="Search"
+                >
+                  <Search className="w-5 h-5" />
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
           {user ? (
-            <>
-              <div className="hidden md:flex items-center gap-4">
-                {user.email === 'faisal301196@gmail.com' && (
-                  <Link to="/admin" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors uppercase">
-                    Admin
-                  </Link>
-                )}
-                <Link to="/profile" className="text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors truncate max-w-[100px]">
-                  {user.displayName?.split(' ')[0]}
+            <div className="flex items-center gap-3 md:gap-4">
+              {user.email === 'faisal301196@gmail.com' && (
+                <Link to="/admin" className="hidden md:block text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors uppercase">
+                  Admin
                 </Link>
-                <button onClick={signOut} className="hover:text-gold-400 transition-colors" title="Sign Out">
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
-              <Link to="/profile" className="md:hidden hover:text-gold-400 transition-colors shrink-0" title="My Profile">
-                <User className="w-5 h-5" />
+              )}
+              <Link to="/profile" className="text-sm font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors truncate max-w-[80px] sm:max-w-[100px]" title="My Profile">
+                {user.displayName?.split(' ')[0] || 'User'}
               </Link>
-            </>
+              <button onClick={signOut} className="hidden md:block hover:text-gold-400 transition-colors" title="Sign Out">
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           ) : (
-            <>
-              <button onClick={async () => {
-                try {
-                  await signInWithGoogle();
-                } catch (e) {}
-              }} className="hidden md:flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs tracking-widest font-medium shrink-0">
-                <User className="w-4 h-4" />
-                Sign In
-              </button>
-              <button onClick={async () => {
-                try {
-                  await signInWithGoogle();
-                } catch (e) {}
-              }} className="md:hidden hover:text-gold-400 transition-colors shrink-0" title="Sign In">
-                <User className="w-5 h-5" />
-              </button>
-            </>
+            <button onClick={async () => {
+              try {
+                await signInWithGoogle();
+              } catch (e) {}
+            }} className="flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs sm:text-sm tracking-widest font-medium shrink-0" title="Sign In">
+              <span className="hidden sm:inline">Sign In</span>
+              <User className="w-5 h-5 sm:hidden" />
+            </button>
           )}
           <Link to="/checkout" className="relative hover:text-gold-400 transition-colors shrink-0">
             <ShoppingBag className="w-5 h-5" />
@@ -297,50 +260,8 @@ export default function Layout() {
 
       <footer className="bg-emerald-950 text-white pt-24 pb-12 px-6 md:px-12 lg:px-24">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-20">
-            <div>
-              <h2 className="text-3xl md:text-5xl font-serif mb-6 text-gold-400">Found Your Dream Set?</h2>
-              <p className="text-white/70 font-light mb-10 max-w-md text-lg">Let's customize your look. Reach out to our bridal stylists to discuss your requirements.</p>
-              
-              <form className="space-y-6 max-w-md" onSubmit={handleInquirySubmit}>
-                <div>
-                  <input required value={inquiryName} onChange={e => setInquiryName(e.target.value)} type="text" placeholder="Your Name" className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors" />
-                </div>
-                <div>
-                  <input required value={inquiryEmail} onChange={e => setInquiryEmail(e.target.value)} type="email" placeholder="Email Address" className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors" />
-                </div>
-                <div>
-                  <input 
-                    value={inquiryDate} 
-                    onChange={e => setInquiryDate(e.target.value)} 
-                    onFocus={(e) => {
-                      e.target.type = 'date';
-                      try { e.target.showPicker(); } catch (err) {}
-                    }}
-                    onClick={(e) => {
-                      e.target.type = 'date';
-                      try { e.target.showPicker(); } catch (err) {}
-                    }}
-                    onBlur={(e) => { if (!inquiryDate) e.target.type = 'text' }}
-                    type="text" 
-                    placeholder="Wedding Date (Optional)" 
-                    className="w-full bg-transparent border-b border-white/30 py-3 text-white placeholder-white/50 focus:outline-none focus:border-gold-500 transition-colors cursor-pointer" 
-                    style={{ colorScheme: 'dark' }}
-                  />
-                </div>
-                <div className="pt-4 flex flex-col sm:flex-row gap-4">
-                  <button disabled={isSendingInquiry || inquirySent} type="submit" className={cn("px-8 py-4 font-medium tracking-wide transition-all duration-300 flex-1 flex items-center justify-center gap-2", inquirySent ? "bg-green-600 text-white" : "bg-gold-500 hover:bg-gold-400 text-emerald-950")}>
-                    {inquirySent ? <><Check className="w-5 h-5"/> Sent Successfully</> : isSendingInquiry ? 'Sending...' : 'Send Inquiry'}
-                  </button>
-                  <a href="https://wa.me/919973819387" target="_blank" rel="noopener noreferrer" className="border border-white/30 hover:border-white text-white px-8 py-4 font-medium tracking-wide transition-all duration-300 flex items-center justify-center gap-2 group">
-                    <WhatsAppIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    WhatsApp Us
-                  </a>
-                </div>
-              </form>
-            </div>
-
-            <div className="lg:pl-20 lg:border-l border-white/10 flex flex-col justify-between">
+          <div className="mb-20">
+            <div className="flex flex-col justify-between">
               <div>
                 <h3 className="text-2xl font-serif font-bold tracking-widest uppercase mb-8">Almas Jewels</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 text-sm text-white/60 font-light">

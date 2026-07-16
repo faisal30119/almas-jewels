@@ -23,10 +23,14 @@ export const products = pgTable('products', {
 
 export const orders = pgTable('orders', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
+  userId: integer('user_id').references(() => users.id),
   totalAmount: integer('total_amount').notNull(),
   status: text('status').notNull().default('pending'),
+  customerName: text('customer_name'),
+  customerEmail: text('customer_email'),
   customerPhone: text('customer_phone'), // For WhatsApp notifications
+  razorpayOrderId: text('razorpay_order_id'),
+  razorpayPaymentId: text('razorpay_payment_id'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
