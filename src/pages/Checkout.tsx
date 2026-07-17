@@ -135,7 +135,7 @@ export default function Checkout() {
         body: JSON.stringify({
           amount: total,
           currency: "INR",
-          items: cartItems.map(i => ({ productId: i.id || i.productId, quantity: i.quantity, price: i.price })),
+          items: cartItems.map(i => ({ productId: i.product?.id || i.productId, quantity: i.quantity, price: i.product?.price || 0 })),
           shippingDetails,
           userId: user ? user.uid : null
         }),
@@ -149,15 +149,7 @@ export default function Checkout() {
         return;
       }
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock', // Fallback for dev if not using real key
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "Almas Jewels",
-        description: "Your Dream Jewelry Purchase",
-        image: "https://images.unsplash.com/photo-1599643478514-4a410f135b5a?w=100&h=100&fit=crop", // Add a small logo
-        order_id: orderData.id,
-        handler: async function (response: any) {
+      const handleSuccess = async (response: any) => {
           // Verify payment success here (ideally server-side)
           console.log("Payment Successful", response);
           
@@ -170,10 +162,10 @@ export default function Checkout() {
                 orderId: orderId,
                 amount: total,
                 items: cartItems.map(item => ({
-                  id: item.id || item.productId,
-                  name: item.name,
-                  quantity: item.quantity,
-                  price: item.price
+                  id: item.product?.id || item.productId || (item as any).id || "unknown_id",
+                  name: item.product?.name || (item as any).name || 'Unknown Item',
+                  quantity: item.quantity || 1,
+                  price: item.product?.price || (item as any).price || 0
                 })),
                 status: 'Processing',
                 shippingDetails,
@@ -199,7 +191,19 @@ export default function Checkout() {
 
           clearCart();
           navigate('/success', { state: { orderId } });
-        },
+        };
+
+
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock', // Fallback for dev if not using real key
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Almas Jewels",
+        description: "Your Dream Jewelry Purchase",
+        image: "https://images.unsplash.com/photo-1599643478514-4a410f135b5a?w=100&h=100&fit=crop", // Add a small logo
+        order_id: orderData.id,
+        handler: handleSuccess,
         prefill: {
           name: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
           email: shippingDetails.email,
@@ -219,10 +223,10 @@ export default function Checkout() {
                   orderId: orderData.id,
                   amount: total,
                   items: cartItems.map(item => ({
-                    id: item.id || item.productId,
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price
+                    id: item.product?.id || item.productId || (item as any).id || "unknown_id",
+                    name: item.product?.name || (item as any).name || 'Unknown Item',
+                    quantity: item.quantity || 1,
+                    price: item.product?.price || (item as any).price || 0
                   })),
                   status: 'failed payment',
                   shippingDetails,
@@ -258,10 +262,10 @@ export default function Checkout() {
               orderId: orderData.id,
               amount: total,
               items: cartItems.map(item => ({
-                id: item.id || item.productId,
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price
+                id: item.product?.id || item.productId || (item as any).id || "unknown_id",
+                name: item.product?.name || (item as any).name || 'Unknown Item',
+                quantity: item.quantity || 1,
+                price: item.product?.price || (item as any).price || 0
               })),
               status: 'Failed',
               shippingDetails,

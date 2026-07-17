@@ -118,7 +118,11 @@ async function startServer() {
     }
     const { uid, email } = req.user;
     try {
-      // Return a successful response. User is handled by Firebase Auth/Firestore.
+      const { eq } = await import('drizzle-orm');
+      const existingUser = await db.select().from(users).where(eq(users.uid, uid));
+      if (existingUser.length === 0) {
+        await db.insert(users).values({ uid, email: email || '' });
+      }
       res.json({ user: { uid, email } });
     } catch (error) {
       console.error(error);
@@ -264,26 +268,40 @@ async function startServer() {
         receipt: `receipt_${Math.random().toString(36).substring(7)}`
       };
       
-      if (client) {
-        try {
-          order = await client.orders.create(options);
-        } catch (e: any) {
-          console.warn("Razorpay API failed (using mock order instead):", e.error || e);
-          order = { id: `order_mock_${Math.random().toString(36).substring(7)}`, amount: options.amount, currency: options.currency };
-        }
-      } else {
-        // Mock order for dev/testing when keys are missing
-        order = { id: `order_mock_${Math.random().toString(36).substring(7)}`, amount: options.amount, currency: options.currency };
-      }
-
-      
       let pgUserId = null;
       if (userId) {
         const { eq } = await import('drizzle-orm');
         const userRecs = await db.select().from(users).where(eq(users.uid, userId));
         if (userRecs.length > 0) {
           pgUserId = userRecs[0].id;
+        } else {
+          const [newUser] = await db.insert(users).values({ uid: userId, email: shippingDetails?.email || '' }).returning({ id: users.id });
+          pgUserId = newUser.id;
         }
+      }
+
+      if (client) {
+        try {
+          order = await client.orders.create(options);
+        } catch (e: any) {
+          console.error("Razorpay API failed:", e.error || e);
+          const errorDesc = e.error?.description || "Payment gateway authentication failed";
+          
+          await db.insert(orders).values({
+            userId: pgUserId,
+            totalAmount: amount * 100,
+            status: 'failed',
+            customerName: shippingDetails ? `${shippingDetails.firstName} ${shippingDetails.lastName}` : null,
+            customerEmail: shippingDetails ? shippingDetails.email : null,
+            customerPhone: shippingDetails ? shippingDetails.phone : null,
+            customerAddress: shippingDetails ? `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.postalCode}` : null,
+            razorpayOrderId: null,
+          });
+
+          return res.status(400).json({ error: errorDesc });
+        }
+      } else {
+        return res.status(500).json({ error: "Razorpay is not configured on the server." });
       }
       
       const [newOrder] = await db.insert(orders).values({
@@ -293,6 +311,7 @@ async function startServer() {
         customerName: shippingDetails ? `${shippingDetails.firstName} ${shippingDetails.lastName}` : null,
         customerEmail: shippingDetails ? shippingDetails.email : null,
         customerPhone: shippingDetails ? shippingDetails.phone : null,
+        customerAddress: shippingDetails ? `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.postalCode}` : null,
         razorpayOrderId: order.id,
       }).returning({ id: orders.id });
       
@@ -300,9 +319,10 @@ async function startServer() {
         await db.insert(orderItems).values(
           items.map((i: any) => ({
             orderId: newOrder.id,
-            productId: Number(i.productId),
-            quantity: i.quantity,
-            price: i.price * 100
+            productId: !isNaN(Number(i.productId)) ? Number(i.productId) : null,
+            firebaseProductId: isNaN(Number(i.productId)) ? String(i.productId) : null,
+            quantity: Number(i.quantity) || 1,
+            price: Math.round(Number(i.price) * 100) || 0
           }))
         );
       }
@@ -346,9 +366,11 @@ async function startServer() {
       if (orderRecs.length > 0) {
         const orderItemsList = await db.select().from(orderItems).where(eq(orderItems.orderId, orderRecs[0].id));
         for (const item of orderItemsList) {
-          await db.update(products).set({
-            stock: sql`${products.stock} - ${item.quantity}`
-          }).where(eq(products.id, item.productId));
+          if (item.productId) {
+            await db.update(products).set({
+              stock: sql`${products.stock} - ${item.quantity}`
+            }).where(eq(products.id, item.productId));
+          }
         }
       }
     } catch (e) {
