@@ -45,6 +45,20 @@ export default function Admin() {
     try {
       const inclusionsArray = formData.inclusions.split(',').map(s => s.trim()).filter(Boolean);
       
+      // 1. Add to Firebase Firestore
+      await addDoc(collection(firebaseDb, 'products'), {
+        name: formData.name,
+        price: Number(formData.price),
+        stock: Number(formData.stock),
+        image: formData.image || 'https://images.unsplash.com/photo-1599643478514-4a410f081467?q=80&w=600&auto=format&fit=crop',
+        category: formData.category,
+        stoneColor: formData.stoneColor,
+        plating: formData.plating,
+        description: formData.description,
+        inclusions: inclusionsArray
+      });
+
+      // 2. Add to Cloud SQL
       const token = await user.getIdToken();
       const res = await fetch('/api/products', {
         method: 'POST',
@@ -82,6 +96,10 @@ export default function Admin() {
         description: '',
         inclusions: ''
       });
+      
+      // Switch to database viewer to show the product table
+      setActiveTable('products');
+      setActiveTab('db');
     } catch (err: any) {
       console.error(err);
       setMessage(`Error adding product: ${err.message}`);
