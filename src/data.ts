@@ -86,7 +86,12 @@ export const products: Product[] = [
 export const categories = [
   'Bridal Sets',
   'Necklaces',
-  'Earrings'
+  'Earrings',
+  'Oxidise jewelry',
+  'American Diamond (AD) / CZ',
+  'Polki Jewelry',
+  'Kundan Jewelry',
+  'Meenakari Jewelry'
 ];
 
 export const stoneColors = [

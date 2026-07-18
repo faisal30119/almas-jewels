@@ -2,6 +2,16 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Filter, Loader2, Heart } from 'lucide-react';
+import royalCollectionImg from '../assets/images/collection_royal_1783594977165.jpg';
+import solitaireCollectionImg from '../assets/images/collection_solitaire_1783594992085.jpg';
+import occasionCollectionImg from '../assets/images/collection_occasion_1783595002665.jpg';
+
+const imageMap: Record<string, string> = {
+  '/assets/images/collection_royal_1783594977165.jpg': royalCollectionImg,
+  '/assets/images/collection_solitaire_1783594992085.jpg': solitaireCollectionImg,
+  '/assets/images/collection_occasion_1783595002665.jpg': occasionCollectionImg,
+};
+
 import { products as hardcodedProducts, Product, categories, stoneColors, platings, priceRanges } from '../data';
 import { cn } from '../lib/utils';
 import { collection, getDocs } from 'firebase/firestore';
@@ -29,6 +39,7 @@ export default function Shop() {
             ...item,
             id: String(item.id),
             stoneColor: item.stone_color || item.stoneColor,
+            image: imageMap[item.image] || item.image
           }));
         }
       } catch (err) {
@@ -45,7 +56,11 @@ export default function Shop() {
         console.error("Failed to fetch from Firebase:", fbErr);
       }
       
-      setDbProducts([...hardcodedProducts, ...pgProducts, ...fbProducts]);
+      
+      const allProds = [...hardcodedProducts, ...pgProducts, ...fbProducts];
+      const uniqueProds = Array.from(new Map(allProds.map(item => [item.id, item])).values());
+      setDbProducts(uniqueProds);
+
       setIsLoading(false);
     };
     fetchProducts();

@@ -3,6 +3,16 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Plus, Minus, ArrowLeft, Check, Instagram, Link2, Loader2, Heart } from 'lucide-react';
 import { WhatsAppIcon } from '../components/icons';
+import royalCollectionImg from '../assets/images/collection_royal_1783594977165.jpg';
+import solitaireCollectionImg from '../assets/images/collection_solitaire_1783594992085.jpg';
+import occasionCollectionImg from '../assets/images/collection_occasion_1783595002665.jpg';
+
+const imageMap: Record<string, string> = {
+  '/assets/images/collection_royal_1783594977165.jpg': royalCollectionImg,
+  '/assets/images/collection_solitaire_1783594992085.jpg': solitaireCollectionImg,
+  '/assets/images/collection_occasion_1783595002665.jpg': occasionCollectionImg,
+};
+
 import { products as hardcodedProducts, Product } from '../data';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -45,6 +55,7 @@ export default function ProductDetail() {
             ...item,
             id: String(item.id),
             stoneColor: item.stone_color || item.stoneColor,
+            image: imageMap[item.image] || item.image
           } as Product);
           return;
         }
