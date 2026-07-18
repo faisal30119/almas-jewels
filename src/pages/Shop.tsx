@@ -129,11 +129,11 @@ export default function Shop() {
         {/* Filters Sidebar */}
         <aside className={cn(
           "lg:w-64 flex-shrink-0 transition-all duration-300 overflow-hidden",
-          isFilterOpen ? "max-h-[2000px]" : "max-h-0 lg:max-h-full"
+          isFilterOpen ? "max-h-[2000px] mt-6 lg:mt-0" : "max-h-0 lg:max-h-full"
         )}>
-          <div className="space-y-10">
+          <div className="grid grid-cols-2 lg:flex lg:flex-col gap-x-4 gap-y-8 lg:gap-y-10">
             {/* Sort Filter */}
-            <div>
+            <div className="col-span-2 lg:col-span-1">
               <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-950 mb-4">Sort By</h3>
               <select
                 value={activeSort}
