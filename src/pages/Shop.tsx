@@ -57,7 +57,7 @@ export default function Shop() {
       }
       
       
-      const allProds = [...hardcodedProducts, ...pgProducts, ...fbProducts];
+      const allProds = [...hardcodedProducts, ...fbProducts, ...pgProducts];
       const uniqueProds = Array.from(new Map(allProds.map(item => [item.name, item])).values());
       setDbProducts(uniqueProds);
 

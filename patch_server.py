@@ -3,96 +3,45 @@ import sys
 with open('server.ts', 'r') as f:
     content = f.read()
 
-old_block = '''      if (client) {
-        try {
-          order = await client.orders.create(options);
-        } catch (e: any) {
-          console.warn("Razorpay API failed (using mock order instead):", e.error || e);
-          order = { id: `order_mock_${Math.random().toString(36).substring(7)}`, amount: options.amount, currency: options.currency };
-        }
+import_block = "import { eq, lt } from \"drizzle-orm\";"
+if import_block not in content:
+    print("Could not find eq, lt import")
+
+new_route = """  app.put("/api/products/:id", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      const parsedId = Number(id);
+      if (isNaN(parsedId)) {
+        res.status(400).json({ error: "Invalid ID" });
+        return;
+      }
+      const updatedProduct = await db.update(products).set({
+        name: req.body.name,
+        price: req.body.price,
+        stock: req.body.stock,
+        image: req.body.image,
+        category: req.body.category,
+        stoneColor: req.body.stoneColor,
+        plating: req.body.plating,
+        description: req.body.description,
+        inclusions: req.body.inclusions
+      }).where(eq(products.id, parsedId)).returning();
+      
+      if (updatedProduct.length > 0) {
+        res.json(updatedProduct[0]);
       } else {
-        // Mock order for dev/testing when keys are missing
-        order = { id: `order_mock_${Math.random().toString(36).substring(7)}`, amount: options.amount, currency: options.currency };
+        res.status(404).json({ error: "Product not found" });
       }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ error: "Failed to update product" });
+    }
+  });
 
-      
-      let pgUserId = null;
-      if (userId) {
-        const { eq } = await import('drizzle-orm');
-        const userRecs = await db.select().from(users).where(eq(users.uid, userId));
-        if (userRecs.length > 0) {
-          pgUserId = userRecs[0].id;
-        } else {
-          const [newUser] = await db.insert(users).values({ uid: userId, email: shippingDetails?.email || '' }).returning({ id: users.id });
-          pgUserId = newUser.id;
-        }
-      }
-      
-      const [newOrder] = await db.insert(orders).values({
-        userId: pgUserId,
-        totalAmount: amount * 100,
-        status: 'pending',
-        customerName: shippingDetails ? `${shippingDetails.firstName} ${shippingDetails.lastName}` : null,
-        customerEmail: shippingDetails ? shippingDetails.email : null,
-        customerPhone: shippingDetails ? shippingDetails.phone : null,
-        customerAddress: shippingDetails ? `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.postalCode}` : null,
-        razorpayOrderId: order.id,
-      }).returning({ id: orders.id });'''
+  // Example secured route"""
 
+content = content.replace("  // Example secured route", new_route)
 
-new_block = '''      let pgUserId = null;
-      if (userId) {
-        const { eq } = await import('drizzle-orm');
-        const userRecs = await db.select().from(users).where(eq(users.uid, userId));
-        if (userRecs.length > 0) {
-          pgUserId = userRecs[0].id;
-        } else {
-          const [newUser] = await db.insert(users).values({ uid: userId, email: shippingDetails?.email || '' }).returning({ id: users.id });
-          pgUserId = newUser.id;
-        }
-      }
-
-      if (client) {
-        try {
-          order = await client.orders.create(options);
-        } catch (e: any) {
-          console.error("Razorpay API failed:", e.error || e);
-          const errorDesc = e.error?.description || "Payment gateway authentication failed";
-          
-          await db.insert(orders).values({
-            userId: pgUserId,
-            totalAmount: amount * 100,
-            status: 'failed',
-            customerName: shippingDetails ? `${shippingDetails.firstName} ${shippingDetails.lastName}` : null,
-            customerEmail: shippingDetails ? shippingDetails.email : null,
-            customerPhone: shippingDetails ? shippingDetails.phone : null,
-            customerAddress: shippingDetails ? `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.postalCode}` : null,
-            razorpayOrderId: null,
-          });
-
-          return res.status(400).json({ error: errorDesc });
-        }
-      } else {
-        // Mock order for dev/testing when keys are missing
-        order = { id: `order_mock_${Math.random().toString(36).substring(7)}`, amount: options.amount, currency: options.currency };
-      }
-      
-      const [newOrder] = await db.insert(orders).values({
-        userId: pgUserId,
-        totalAmount: amount * 100,
-        status: 'pending',
-        customerName: shippingDetails ? `${shippingDetails.firstName} ${shippingDetails.lastName}` : null,
-        customerEmail: shippingDetails ? shippingDetails.email : null,
-        customerPhone: shippingDetails ? shippingDetails.phone : null,
-        customerAddress: shippingDetails ? `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.postalCode}` : null,
-        razorpayOrderId: order.id,
-      }).returning({ id: orders.id });'''
-
-if old_block in content:
-    content = content.replace(old_block, new_block)
-    with open('server.ts', 'w') as f:
-        f.write(content)
-    print("Patched server.ts successfully")
-else:
-    print("Could not find replacement block in server.ts")
-
+with open('server.ts', 'w') as f:
+    f.write(content)
+print("Patched server.ts")

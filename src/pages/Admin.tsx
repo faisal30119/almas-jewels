@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
-import { db as firebaseDb } from '../lib/firebase';
+
+
 import { categories, stoneColors, platings } from '../data';
 import { useAuth } from '../context/AuthContext';
 import { Database, Plus, AlertTriangle } from 'lucide-react';
@@ -11,7 +11,8 @@ export default function Admin() {
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'add' | 'db' | 'alerts'>('add');
   const [dbData, setDbData] = useState<any[]>([]);
-  const [activeTable, setActiveTable] = useState('users');
+    const [activeTable, setActiveTable] = useState('users');
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [dbLoading, setDbLoading] = useState(false);
   const [lowStockProducts, setLowStockProducts] = useState<any[]>([]);
   const [lowStockLoading, setLowStockLoading] = useState(false);
@@ -32,6 +33,39 @@ export default function Admin() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleEditClick = (product: any) => {
+    setEditingProductId(product.id);
+    setFormData({
+      name: product.name || '',
+      price: String(product.price || ''),
+      stock: String(product.stock || ''),
+      image: product.image || '',
+      category: product.category || categories[0],
+      stoneColor: product.stoneColor || product.stone_color || stoneColors[0],
+      plating: product.plating || platings[0],
+      description: product.description || '',
+      inclusions: Array.isArray(product.inclusions) ? product.inclusions.join(', ') : (product.inclusions || '')
+    });
+    setActiveTab('add');
+    setMessage('');
+  };
+
+  const resetForm = () => {
+    setEditingProductId(null);
+    setFormData({
+      name: '',
+      price: '',
+      stock: '',
+      image: '',
+      category: categories[0],
+      stoneColor: stoneColors[0],
+      plating: platings[0],
+      description: '',
+      inclusions: ''
+    });
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || user.email !== 'faisal301196@gmail.com') {
@@ -45,57 +79,60 @@ export default function Admin() {
     try {
       const inclusionsArray = formData.inclusions.split(',').map(s => s.trim()).filter(Boolean);
       
-      // 1. Add to Firebase Firestore
-      await addDoc(collection(firebaseDb, 'products'), {
-        name: formData.name,
-        price: Number(formData.price),
-        stock: Number(formData.stock),
-        image: formData.image || 'https://images.unsplash.com/photo-1599643478514-4a410f081467?q=80&w=600&auto=format&fit=crop',
-        category: formData.category,
-        stoneColor: formData.stoneColor,
-        plating: formData.plating,
-        description: formData.description,
-        inclusions: inclusionsArray
-      });
 
-      // 2. Add to Cloud SQL
+
       const token = await user.getIdToken();
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          price: Number(formData.price),
-          stock: Number(formData.stock),
-          image: formData.image || 'https://images.unsplash.com/photo-1599643478514-4a410f081467?q=80&w=600&auto=format&fit=crop', // default placeholder
-          category: formData.category,
-          stoneColor: formData.stoneColor,
-          plating: formData.plating,
-          description: formData.description,
-          inclusions: inclusionsArray
-        })
-      });
+      
+      let res;
+      if (editingProductId) {
+        // Edit Cloud SQL product
+        res = await fetch(`/api/products/${editingProductId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            price: Number(formData.price),
+            stock: Number(formData.stock),
+            image: formData.image || 'https://images.unsplash.com/photo-1599643478514-4a410f081467?q=80&w=600&auto=format&fit=crop',
+            category: formData.category,
+            stoneColor: formData.stoneColor,
+            plating: formData.plating,
+            description: formData.description,
+            inclusions: inclusionsArray
+          })
+        });
+      } else {
+        // 2. Add to Cloud SQL
+        res = await fetch('/api/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            price: Number(formData.price),
+            stock: Number(formData.stock),
+            image: formData.image || 'https://images.unsplash.com/photo-1599643478514-4a410f081467?q=80&w=600&auto=format&fit=crop', // default placeholder
+            category: formData.category,
+            stoneColor: formData.stoneColor,
+            plating: formData.plating,
+            description: formData.description,
+            inclusions: inclusionsArray
+          })
+        });
+      }
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to add product to database');
+        throw new Error(errorData.error || `Failed to ${editingProductId ? 'update' : 'add'} product to database`);
       }
       
-      setMessage('Product added successfully!');
-      setFormData({
-        name: '',
-        price: '',
-        stock: '',
-        image: '',
-        category: categories[0],
-        stoneColor: stoneColors[0],
-        plating: platings[0],
-        description: '',
-        inclusions: ''
-      });
+      setMessage(editingProductId ? 'Product updated successfully!' : 'Product added successfully!');
+      resetForm();
       
       // Switch to database viewer to show the product table
       setActiveTable('products');
@@ -178,10 +215,10 @@ export default function Admin() {
       
       <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
         <button 
-          onClick={() => setActiveTab('add')}
+          onClick={() => { setActiveTab('add'); resetForm(); }}
           className={`flex items-center gap-2 py-3 px-6 font-medium whitespace-nowrap ${activeTab === 'add' ? 'border-b-2 border-emerald-950 text-emerald-950' : 'text-gray-500 hover:text-gray-700'}`}
         >
-          <Plus className="w-4 h-4" /> Add Product (Firebase)
+          <Plus className="w-4 h-4" /> {editingProductId ? 'Edit Product' : 'Add Product'}
         </button>
         <button 
           onClick={() => setActiveTab('db')}
@@ -341,6 +378,9 @@ export default function Admin() {
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="bg-gray-50">
+                    {activeTable === 'products' && (
+                      <th className="p-3 border-b text-emerald-950 font-medium w-16">Actions</th>
+                    )}
                     {Object.keys(dbData[0]).map(key => (
                       <th key={key} className="p-3 border-b text-emerald-950 font-medium">{key}</th>
                     ))}
@@ -349,6 +389,16 @@ export default function Admin() {
                 <tbody>
                   {dbData.map((row, idx) => (
                     <tr key={idx} className="border-b hover:bg-gray-50">
+                      {activeTable === 'products' && (
+                        <td className="p-3 border-b">
+                          <button 
+                            onClick={() => handleEditClick(row)}
+                            className="text-sm text-gold-600 hover:text-gold-700 font-medium"
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      )}
                       {Object.values(row).map((val: any, vIdx) => (
                         <td key={vIdx} className="p-3 text-gray-700 max-w-xs truncate">
                           {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val)}
