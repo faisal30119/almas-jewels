@@ -7,7 +7,9 @@ import { Database, Plus, AlertTriangle } from 'lucide-react';
 
 export default function Admin() {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'add' | 'db' | 'alerts'>('add');
   const [dbData, setDbData] = useState<any[]>([]);
@@ -52,6 +54,7 @@ export default function Admin() {
 
   const resetForm = () => {
     setEditingProductId(null);
+    setLocalPreview(null);
     setFormData({
       name: '',
       price: '',
@@ -73,7 +76,7 @@ export default function Admin() {
       return;
     }
     
-    setLoading(true);
+    setSubmitLoading(true);
     setMessage('');
     
     try {
@@ -141,7 +144,7 @@ export default function Admin() {
       console.error(err);
       setMessage(`Error adding product: ${err.message}`);
     } finally {
-      setLoading(false);
+      setSubmitLoading(false);
     }
   };
 
@@ -276,7 +279,7 @@ export default function Admin() {
                   <input type="url" name="image" value={formData.image} onChange={handleChange} placeholder="https://..." className="w-full sm:flex-1 border border-gray-300 p-2 rounded focus:border-gold-500 focus:outline-none" />
                   <span className="text-gray-400 text-center sm:text-left">or</span>
                   <label className="bg-gray-100 px-4 py-2 rounded border border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors whitespace-nowrap text-center">
-                    <span className="text-sm font-medium text-gray-700">{loading ? 'Uploading...' : 'Upload Image'}</span>
+                    <span className="text-sm font-medium text-gray-700">{uploadLoading ? 'Uploading...' : 'Upload Image'}</span>
                     <input 
                       type="file" 
                       accept="image/*" 
@@ -285,7 +288,11 @@ export default function Admin() {
                         const file = e.target.files?.[0];
                         if (!file) return;
                         
-                        setLoading(true);
+                        // Create local preview immediately
+                        const objectUrl = URL.createObjectURL(file);
+                        setLocalPreview(objectUrl);
+                        
+                        setUploadLoading(true);
                         const uploadData = new FormData();
                         uploadData.append('file', file);
                         
@@ -307,15 +314,21 @@ export default function Admin() {
                         } catch (err: any) {
                           alert(`Error uploading image: ${err.message}`);
                         } finally {
-                          setLoading(false);
+                          setUploadLoading(false);
+                          e.target.value = '';
                         }
                       }} 
                     />
                   </label>
                 </div>
-                {formData.image && (
-                  <div className="mt-3">
-                    <img src={formData.image} alt="Preview" className="w-24 h-24 object-cover rounded border border-gray-200 shadow-sm" />
+                {(localPreview || formData.image) && (
+                  <div className="mt-3 relative inline-block">
+                    <img src={localPreview || formData.image} alt="Preview" className="w-24 h-24 object-cover rounded border border-gray-200 shadow-sm" />
+                    {uploadLoading && (
+                      <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded">
+                        <div className="w-5 h-5 border-2 border-emerald-900 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -348,9 +361,16 @@ export default function Admin() {
               </div>
             </div>
             
-            <button disabled={loading} type="submit" className="bg-emerald-950 text-white px-8 py-3 hover:bg-emerald-900 transition-colors disabled:opacity-50">
-              {loading ? 'Adding...' : 'Add Product'}
-            </button>
+            <div className="flex gap-4">
+              <button disabled={submitLoading || uploadLoading} type="submit" className="bg-emerald-950 text-white px-8 py-3 hover:bg-emerald-900 transition-colors disabled:opacity-50">
+                {submitLoading ? 'Saving...' : editingProductId ? 'Update Product' : 'Add Product'}
+              </button>
+              {editingProductId && (
+                <button type="button" onClick={resetForm} className="px-8 border border-gray-300 text-gray-700 py-3 hover:bg-gray-50 transition-colors">
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
       )}

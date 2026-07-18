@@ -41,7 +41,7 @@ function getTwilioClient() {
 let razorpayClient: Razorpay | null = null;
 function getRazorpayClient() {
   if (!razorpayClient) {
-    const keyId = process.env.VITE_RAZORPAY_KEY_ID;
+    const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (keyId && keySecret) {
       razorpayClient = new Razorpay({ key_id: keyId, key_secret: keySecret });
@@ -308,6 +308,11 @@ async function startServer() {
       res.status(400).json({ error: "Amount is required" });
       return;
     }
+    
+    if (amount * 100 < 100) {
+      res.status(400).json({ error: "Amount must be at least 1 INR (100 paise)" });
+      return;
+    }
 
     const client = getRazorpayClient();
     let order: any = null;
@@ -348,8 +353,12 @@ async function startServer() {
             customerAddress: shippingDetails ? `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.postalCode}` : null,
             razorpayOrderId: null,
           });
+          
+          if (e.statusCode === 401) {
+            return res.status(401).json({ error: "Razorpay authentication failed" });
+          }
 
-          return res.status(400).json({ error: errorDesc });
+          return res.status(500).json({ error: errorDesc });
         }
       } else {
         return res.status(500).json({ error: "Razorpay is not configured on the server." });
@@ -391,16 +400,18 @@ async function startServer() {
 
     const secret = process.env.RAZORPAY_KEY_SECRET;
     
-    // Verify signature if keys are provided
-    if (secret && razorpay_signature && orderId && paymentId) {
-      const generatedSignature = crypto.createHmac("sha256", secret)
-                                      .update(orderId + "|" + paymentId)
-                                      .digest("hex");
-                                      
-      if (generatedSignature !== razorpay_signature) {
-        res.status(400).json({ error: "Invalid payment signature" });
-        return;
-      }
+    // Verify signature
+    if (!secret || !razorpay_signature || !orderId || !paymentId) {
+      res.status(400).json({ error: "Missing required fields for signature verification" });
+      return;
+    }
+    const generatedSignature = crypto.createHmac("sha256", secret)
+                                    .update(orderId + "|" + paymentId)
+                                    .digest("hex");
+                                    
+    if (generatedSignature !== razorpay_signature) {
+      res.status(400).json({ error: "Invalid payment signature" });
+      return;
     }
 
     console.log(`Payment successful for order: ${orderId}, paymentId: ${paymentId}`);
