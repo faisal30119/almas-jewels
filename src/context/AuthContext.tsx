@@ -52,11 +52,14 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       const isIframe = window.self !== window.top;
       
       if (isIframe) {
-        console.warn("Sign-in might be blocked in iframe. Please open the app in a new tab using the button in the top right of the preview.");
+        const opened = window.open(window.location.href, '_blank');
+        if (!opened) {
+          alert("Google Sign-In is blocked inside this preview window.\n\nPlease allow popups for this site, or open the app in a new tab using the icon at the top right to sign in.");
+        }
+        return;
       }
 
-      if (isMobile && !isIframe) {
-        // On mobile browsers outside iframe, redirect is much more reliable than popup
+      if (isMobile) {
         await signInWithRedirect(auth, googleProvider);
       } else {
         await signInWithPopup(auth, googleProvider);
@@ -66,7 +69,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         console.log("Sign-in popup closed by user or cancelled");
       } else {
         console.error("Error signing in with Google:", error);
-        alert(`Sign-in failed: ${error.message}\n\nPlease try opening the app in a normal (non-incognito) browser tab.`);
+        alert(`Sign-in failed: ${error.message}`);
       }
       throw error;
     }

@@ -162,7 +162,7 @@ export default function Layout() {
               <User className="w-5 h-5 sm:hidden" />
             </button>
           )}
-          <Link to="/checkout" className="relative hover:text-gold-400 transition-colors shrink-0">
+          <Link to="/cart" className="relative hover:text-gold-400 transition-colors shrink-0">
             <ShoppingBag className="w-5 h-5" />
             <AnimatePresence>
               {cartCount > 0 && (

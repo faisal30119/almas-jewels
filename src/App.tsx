@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/Product';
+import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Success from './pages/Success';
 import OrderTracking from './pages/OrderTracking';
@@ -25,6 +26,7 @@ export default function App() {
                 <Route index element={<Home />} />
                 <Route path="shop" element={<Shop />} />
                 <Route path="product/:id" element={<ProductDetail />} />
+                <Route path="cart" element={<Cart />} />
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="track" element={<OrderTracking />} />
                 <Route path="profile" element={<Profile />} />

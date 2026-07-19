@@ -57,6 +57,7 @@ export default function ProductDetail() {
             stoneColor: item.stone_color || item.stoneColor,
             image: imageMap[item.image] || item.image
           } as Product);
+          setIsLoading(false);
           return;
         }
       } catch (err) {
@@ -67,7 +68,12 @@ export default function ProductDetail() {
       try {
         if (!id) return;
         const docRef = doc(db, 'products', id);
-        const docSnap = await getDoc(docRef);
+        
+        const docSnap = await Promise.race([
+          getDoc(docRef),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
+        ]) as any;
+
         
         if (docSnap.exists()) {
           setProduct({ id: docSnap.id, ...docSnap.data() } as Product);

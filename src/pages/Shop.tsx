@@ -47,7 +47,12 @@ export default function Shop() {
       }
       
       try {
-        const querySnapshot = await getDocs(collection(db, 'products'));
+        
+        const querySnapshot = await Promise.race([
+          getDocs(collection(db, 'products')),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
+        ]) as any;
+
         fbProducts = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
