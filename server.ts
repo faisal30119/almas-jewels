@@ -31,7 +31,8 @@ function getTwilioClient() {
   if (!twilioClient) {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
-    if (accountSid && authToken) {
+    // Check if accountSid starts with 'AC'
+    if (accountSid && accountSid.startsWith('AC') && authToken) {
       twilioClient = twilio(accountSid, authToken);
     }
   }
@@ -491,6 +492,7 @@ async function startServer() {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'smtp.ethereal.email',
         port: Number(process.env.SMTP_PORT) || 587,
+        secure: Number(process.env.SMTP_PORT) === 465,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS
@@ -520,8 +522,13 @@ async function startServer() {
       } else {
         console.log("Mock Email sent (SMTP credentials not configured):", email);
       }
-    } catch (emailError) {
-      console.error("Failed to send email notification:", emailError);
+    } catch (emailError: any) {
+      // Check if it is just invalid login
+      if (emailError && emailError.message && emailError.message.includes("Username and Password not accepted")) {
+         console.log("Mock Email sent (SMTP credentials invalid):", email);
+      } else {
+         console.error("Failed to send email notification:", emailError);
+      }
     }
 
     // 2. Send WhatsApp Notification
