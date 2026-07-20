@@ -3,45 +3,136 @@ import sys
 with open('server.ts', 'r') as f:
     content = f.read()
 
-import_block = "import { eq, lt } from \"drizzle-orm\";"
-if import_block not in content:
-    print("Could not find eq, lt import")
+target = "    const { orderId, paymentId, email, phone, amount, razorpay_signature } = req.body;"
+replacement = """    const { 
+      orderId, paymentId, email, phone, amount, razorpay_signature,
+      firstName, lastName, address, city, postalCode, cartItems
+    } = req.body;"""
 
-new_route = """  app.put("/api/products/:id", requireAdmin, async (req: AuthRequest, res) => {
+if target in content:
+    content = content.replace(target, replacement)
+    print("Replaced destructing")
+
+target2 = """    const emailHtml = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #064e3b;">Payment Successful!</h2>
+        <p>Thank you for your order at Almas Jewels.</p>
+        <p><strong>Order ID:</strong> ${orderId}</p>
+        <p><strong>Amount:</strong> ₹${amount}</p>
+        <p>We are processing your elegant pieces and will notify you when they ship.</p>
+      </div>
+    `;"""
+
+replacement2 = """    // Get product names for email and apps script
+    const productName = cartItems && cartItems.length > 0 
+      ? cartItems.map((item: any) => `${item.name} (x${item.quantity})`).join(', ') 
+      : 'Items';
+
+    const orderDetailsHtml = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #333;">
+        <h2 style="color: #064e3b;">Order Details</h2>
+        <p><strong>Order ID:</strong> ${orderId}</p>
+        <p><strong>Products:</strong> ${productName}</p>
+        <p><strong>Total Amount:</strong> ₹${amount}</p>
+        <h3>Shipping Information</h3>
+        <p>
+          ${firstName || ''} ${lastName || ''}<br>
+          ${email || ''}<br>
+          ${phone || ''}<br>
+          ${address || ''}<br>
+          ${city || ''} - ${postalCode || ''}
+        </p>
+      </div>
+    `;
+
+    const emailHtml = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #064e3b;">Payment Successful!</h2>
+        <p>Thank you for your order at Almas Jewels.</p>
+        ${orderDetailsHtml}
+        <p>We are processing your elegant pieces and will notify you when they ship.</p>
+      </div>
+    `;
+    
+    const adminEmailHtml = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #064e3b;">New Order Received!</h2>
+        ${orderDetailsHtml}
+      </div>
+    `;
+"""
+
+if target2 in content:
+    content = content.replace(target2, replacement2)
+    print("Replaced email generation")
+
+target3 = """        await transporter.sendMail({
+          from: '"Almas Jewels" <orders@almasjewels.com>',
+          to: email,
+          subject: `Order Confirmation - ${orderId}`,
+          html: emailHtml
+        });
+        console.log("Email notification sent to:", email);"""
+
+replacement3 = """        await transporter.sendMail({
+          from: '"Almas Jewels" <orders@almasjewels.com>',
+          to: email,
+          subject: `Order Confirmation - ${orderId}`,
+          html: emailHtml
+        });
+        console.log("Email notification sent to user:", email);
+        
+        const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+        if (adminEmail) {
+          await transporter.sendMail({
+            from: '"Almas Jewels" <orders@almasjewels.com>',
+            to: adminEmail,
+            subject: `New Order Received - ${orderId}`,
+            html: adminEmailHtml
+          });
+          console.log("Admin email notification sent to:", adminEmail);
+        }
+"""
+
+if target3 in content:
+    content = content.replace(target3, replacement3)
+    print("Replaced email sending logic")
+
+target4 = """    res.json({ success: true, message: "Notifications processed successfully" });"""
+replacement4 = """    // Send data to Google Apps Script
     try {
-      const { id } = req.params;
-      const parsedId = Number(id);
-      if (isNaN(parsedId)) {
-        res.status(400).json({ error: "Invalid ID" });
-        return;
-      }
-      const updatedProduct = await db.update(products).set({
-        name: req.body.name,
-        price: req.body.price,
-        stock: req.body.stock,
-        image: req.body.image,
-        category: req.body.category,
-        stoneColor: req.body.stoneColor,
-        plating: req.body.plating,
-        description: req.body.description,
-        inclusions: req.body.inclusions
-      }).where(eq(products.id, parsedId)).returning();
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbycPFwQtQHGsl4a_yZgMIp-pmxOXm_DPKvUtFoQTywOwHsKrsmUyD-nHlTBEWqaPqWY/exec';
+      const payload = {
+        firstName: firstName || '',
+        lastName: lastName || '',
+        email: email || '',
+        address: address || '',
+        phoneNumber: phone || '',
+        city: city || '',
+        zipCode: postalCode || '',
+        productName: productName,
+        totalAmount: amount,
+        timestamp: new Date().toISOString()
+      };
       
-      if (updatedProduct.length > 0) {
-        res.json(updatedProduct[0]);
-      } else {
-        res.status(404).json({ error: "Product not found" });
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
-      res.status(500).json({ error: "Failed to update product" });
+      const scriptResponse = await fetch(scriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      console.log('Google Apps Script response:', scriptResponse.status);
+    } catch (scriptError) {
+      console.error('Error calling Google Apps Script:', scriptError);
     }
-  });
 
-  // Example secured route"""
+    res.json({ success: true, message: "Notifications processed successfully" });"""
 
-content = content.replace("  // Example secured route", new_route)
+if target4 in content:
+    content = content.replace(target4, replacement4)
+    print("Replaced res.json")
 
 with open('server.ts', 'w') as f:
     f.write(content)
-print("Patched server.ts")
+
