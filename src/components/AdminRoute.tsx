@@ -18,7 +18,13 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   // The real security happens on the backend.
   const adminEmails = import.meta.env.VITE_ADMIN_EMAILS 
     ? import.meta.env.VITE_ADMIN_EMAILS.split(',').map((e: string) => e.trim()) 
-    : ['faisal301196@gmail.com'];
+    : ['faisal301196@gmail.com', 'almasladiescornersakchi@gmail.com'];
+  
+  // To assist with preview
+  if (user && user.email) {
+     console.log("Logged in as:", user.email);
+     console.log("Admin emails list:", adminEmails);
+  }
     
   if (!user || !user.email || !adminEmails.includes(user.email)) {
     return <Navigate to="/" replace />;

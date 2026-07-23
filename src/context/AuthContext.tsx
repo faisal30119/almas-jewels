@@ -51,13 +51,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const isIframe = window.self !== window.top;
       
-      if (isIframe) {
-        const opened = window.open(window.location.href, '_blank');
-        if (!opened) {
-          alert("Google Sign-In is blocked inside this preview window.\n\nPlease allow popups for this site, or open the app in a new tab using the icon at the top right to sign in.");
-        }
-        return;
-      }
+
+
 
       if (isMobile) {
         await signInWithRedirect(auth, googleProvider);
@@ -69,7 +64,11 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         console.log("Sign-in popup closed by user or cancelled");
       } else {
         console.error("Error signing in with Google:", error);
-        alert(`Sign-in failed: ${error.message}`);
+        if (error.code === 'auth/unauthorized-domain') {
+           alert("Domain not authorized for Google Sign-In.\n\n1. If you just added it, Firebase can take up to 5-10 minutes to propagate the change. Please wait a moment and try again.\n\n2. Make sure you added exactly: " + window.location.hostname + "\n\n3. Also try adding 'ai.studio' to your Authorized Domains if you are still having issues.");
+        } else {
+           alert(`Sign-in failed: ${error.message} (${error.code})`);
+        }
       }
       throw error;
     }

@@ -40,11 +40,11 @@ export const requireAdmin = async (
       return;
     }
 
-    const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim()) : ['faisal301196@gmail.com'];
+    const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim()) : ['faisal301196@gmail.com', 'almasladiescornersakchi@gmail.com'];
     
     // Also include the hardcoded admin email used in frontend, to be safe, or just rely on env
     // For now we'll rely on ADMIN_EMAILS environment variable
-    if (!adminEmails.includes(req.user.email) && req.user.email !== 'faisal301196@gmail.com') {
+    if (!adminEmails.includes(req.user.email) && req.user.email !== 'faisal301196@gmail.com' && req.user.email !== 'almasladiescornersakchi@gmail.com') {
       res.status(403).json({ error: 'Forbidden: Admin access required' });
       return;
     }

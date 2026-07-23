@@ -419,11 +419,20 @@ export default function Admin() {
                           </button>
                         </td>
                       )}
-                      {Object.values(row).map((val: any, vIdx) => (
-                        <td key={vIdx} className="p-3 text-gray-700 max-w-xs truncate">
-                          {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val)}
-                        </td>
-                      ))}
+                      {Object.entries(row).map(([key, val]: [string, any], vIdx) => {
+                        let displayVal = val;
+                        if (activeTable === 'orders' && key === 'totalAmount' && typeof val === 'number') {
+                          displayVal = val / 100;
+                        }
+                        if (activeTable === 'orders' && key === 'userId' && val === null) {
+                          displayVal = "Guest (Not logged in)";
+                        }
+                        return (
+                          <td key={vIdx} className="p-3 text-gray-700 max-w-xs truncate">
+                            {typeof displayVal === 'object' && displayVal !== null ? JSON.stringify(displayVal) : String(displayVal)}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
