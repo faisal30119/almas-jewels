@@ -80,6 +80,17 @@ export const products: Product[] = [
     plating: 'Antique Gold',
     description: 'An oversized statement ring that commands attention. Featuring a large simulated ruby surrounded by delicate uncut-style stones.',
     inclusions: ['Adjustable Statement Ring']
+  },
+  {
+    id: 'p7',
+    name: 'Green Pendant',
+    price: 1,
+    image: 'https://res.cloudinary.com/niagn9pn/image/upload/v1784398302/almas_bridal/ljtcepjbjgjz9zevqnie.webp',
+    category: 'Necklaces',
+    stoneColor: 'Green',
+    plating: 'Rhodium',
+    description: 'Green Pendant Necklace',
+    inclusions: ['Pendant']
   }
 ];
 

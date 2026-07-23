@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Package, Calendar, LogOut, Heart, Trash2 } from 'lucide-react';
+import { Package, Calendar, LogOut, Heart, Trash2, Loader2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { db } from '../lib/firebase';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { products as hardcodedProducts, Product } from '../data';
 import { cn } from '../lib/utils';
 
@@ -18,6 +19,60 @@ export default function Profile() {
   
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingWishlist, setLoadingWishlist] = useState(true);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const confirmCancel = async () => {
+    if (!cancelOrderId) return;
+    
+    if (!cancelReason.trim()) {
+      alert("Please provide a reason for cancellation.");
+      return;
+    }
+
+    setIsCancelling(true);
+    try {
+      const orderToCancel = orders.find(o => o.id === cancelOrderId);
+      if (!orderToCancel) throw new Error("Order not found in state");
+
+      // Hit API to cancel order (handles refund, inventory, notification, logging)
+      const res = await fetch("/api/orders/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razorpayOrderId: orderToCancel.orderId,
+          firebaseDocId: cancelOrderId,
+          reason: cancelReason,
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to cancel order");
+      }
+
+      const orderRef = doc(db, 'orders', cancelOrderId);
+      await updateDoc(orderRef, {
+        status: 'Cancelled',
+        cancelReason: cancelReason,
+        cancelledAt: new Date().toISOString()
+      });
+      
+      setOrders(orders.map(o => o.id === cancelOrderId ? { ...o, status: 'Cancelled' } : o));
+      setCancelOrderId(null);
+      setCancelReason("");
+    } catch (error: any) {
+      console.error("Error cancelling order:", error);
+      alert(error.message || 'Failed to cancel order. Please try again.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleCancelOrder = (orderId: string) => {
+    setCancelOrderId(orderId);
+  };
   
   const [activeTab, setActiveTab] = useState<'orders' | 'wishlist'>('orders');
 
@@ -167,9 +222,9 @@ export default function Profile() {
                     className="border border-gray-100 p-6 flex flex-col md:flex-row justify-between gap-6 hover:border-gray-200 transition-colors"
                   >
                     <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium text-emerald-950">Order {order.orderId}</span>
-                        <span className="text-xs bg-emerald-50 text-emerald-900 px-2 py-1 rounded-full uppercase tracking-wider font-medium">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="font-medium text-emerald-950 max-w-[150px] sm:max-w-xs truncate">Order {order.orderId}</span>
+                        <span className="text-xs bg-emerald-50 text-emerald-900 px-2.5 py-1 rounded-full uppercase tracking-wider font-medium whitespace-nowrap shrink-0">
                           {order.status || 'Processing'}
                         </span>
                       </div>
@@ -185,11 +240,22 @@ export default function Profile() {
                       </div>
                     </div>
                     
-                    <div className="flex flex-col md:items-end justify-center gap-1">
-                      <span className="text-xs uppercase tracking-widest text-gray-400">Total Amount</span>
-                      <span className="text-lg font-medium text-emerald-950 flex items-center">
-                        ₹{order.amount?.toLocaleString('en-IN')}
-                      </span>
+                    <div className="flex flex-col md:items-end justify-between gap-4">
+                      <div className="flex flex-col md:items-end justify-center gap-1">
+                        <span className="text-xs uppercase tracking-widest text-gray-400">Total Amount</span>
+                        <span className="text-lg font-medium text-emerald-950 flex items-center">
+                          ₹{order.amount?.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      
+                      {(!order.status || order.status.toLowerCase() === 'processing' || order.status.toLowerCase() === 'pending') && (
+                        <button 
+                          onClick={() => handleCancelOrder(order.id)}
+                          className="text-xs font-medium uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors border border-red-200 hover:border-red-500 px-4 py-2 rounded-sm"
+                        >
+                          Cancel Order
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 ))}
@@ -244,6 +310,49 @@ export default function Profile() {
           </>
         )}
       </div>
+
+      {cancelOrderId && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white p-8 max-w-md w-full shadow-2xl relative"
+          >
+            <h3 className="text-xl font-serif text-emerald-950 mb-4">Cancel Order</h3>
+            <p className="text-gray-600 mb-4 font-light">
+              Are you sure you want to cancel this order? This action cannot be undone.
+            </p>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Reason for Cancellation</label>
+              <textarea 
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="w-full border border-gray-300 rounded p-3 focus:outline-none focus:border-emerald-950 min-h-[100px]"
+                placeholder="Please tell us why you are cancelling..."
+                required
+              />
+            </div>
+            <div className="flex justify-end gap-4">
+              <button 
+                onClick={() => { setCancelOrderId(null); setCancelReason(""); }}
+                className="px-6 py-2.5 border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors uppercase tracking-widest text-xs font-medium"
+                disabled={isCancelling}
+              >
+                Keep Order
+              </button>
+              <button 
+                onClick={confirmCancel}
+                className="px-6 py-2.5 bg-red-600 text-white hover:bg-red-700 transition-colors uppercase tracking-widest text-xs font-medium flex items-center gap-2"
+                disabled={isCancelling}
+              >
+                {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Yes, Cancel
+              </button>
+            </div>
+          </motion.div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

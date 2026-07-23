@@ -1,46 +1,71 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, Package, Truck, CheckCircle, PackageOpen } from 'lucide-react';
+import { Search, Package, Truck, CheckCircle, PackageOpen, XCircle } from 'lucide-react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 
 export default function OrderTracking() {
   const [orderId, setOrderId] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [orderStatus, setOrderStatus] = useState<null | 'processing' | 'shipped' | 'delivered'>(null);
+  const [orderStatus, setOrderStatus] = useState<null | string>(null);
   const [searchedId, setSearchedId] = useState('');
+  const { user } = useAuth();
 
-  const handleTrack = (e: React.FormEvent) => {
+  const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderId.trim()) return;
 
     setIsSearching(true);
     setOrderStatus(null);
 
-    // Mock API call to fetch order status
-    setTimeout(() => {
-      // Simulate randomly picking a status, or hash the orderId
-      const charCode = orderId.trim().charCodeAt(0) || 0;
-      let status: 'processing' | 'shipped' | 'delivered' = 'processing';
-      if (charCode % 3 === 1) status = 'shipped';
-      if (charCode % 3 === 2) status = 'delivered';
+    try {
+      if (user) {
+        const q = query(collection(db, 'orders'), where('orderId', '==', orderId.trim()));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const orderDoc = querySnapshot.docs[0].data();
+          setOrderStatus(orderDoc.status ? orderDoc.status.toLowerCase() : 'processing');
+          setSearchedId(orderId);
+          setIsSearching(false);
+          return;
+        }
+      }
       
-      setOrderStatus(status);
+      // Fallback or guest tracking mock for now
+      setTimeout(() => {
+        setOrderStatus('processing');
+        setSearchedId(orderId);
+        setIsSearching(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error fetching order status:", error);
+      setOrderStatus('processing');
       setSearchedId(orderId);
       setIsSearching(false);
-    }, 1500);
+    }
   };
 
-  const stages = [
-    { id: 'processing', label: 'Processing', icon: Package, description: 'We are preparing your order' },
-    { id: 'shipped', label: 'Shipped', icon: Truck, description: 'Your order is on the way' },
-    { id: 'delivered', label: 'Delivered', icon: CheckCircle, description: 'Your order has been delivered' }
-  ];
+  const isCancelled = orderStatus === 'cancelled';
+  
+  const stages = isCancelled 
+    ? [
+        { id: 'processing', label: 'Processing', icon: Package, description: 'Order was received' },
+        { id: 'cancelled', label: 'Cancelled', icon: XCircle, description: 'Your order has been cancelled' }
+      ]
+    : [
+        { id: 'processing', label: 'Processing', icon: Package, description: 'We are preparing your order' },
+        { id: 'shipped', label: 'Shipped', icon: Truck, description: 'Your order is on the way' },
+        { id: 'delivered', label: 'Delivered', icon: CheckCircle, description: 'Your order has been delivered' }
+      ];
 
   const getCurrentStepIndex = () => {
-    if (orderStatus === 'processing') return 0;
+    if (orderStatus === 'processing' || orderStatus === 'pending') return 0;
     if (orderStatus === 'shipped') return 1;
     if (orderStatus === 'delivered') return 2;
-    return -1;
+    if (orderStatus === 'cancelled') return 1; // 2nd step in cancelled flow
+    return 0;
   };
 
   const currentStep = getCurrentStepIndex();

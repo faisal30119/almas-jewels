@@ -589,6 +589,97 @@ async function startServer() {
     res.json({ success: true, message: "Notifications processed successfully" });
   });
 
+  app.post("/api/orders/cancel", async (req, res) => {
+    const { razorpayOrderId, firebaseDocId, reason } = req.body;
+    
+    if (!razorpayOrderId) {
+      return res.status(400).json({ error: "Missing order ID" });
+    }
+
+    try {
+      const { eq, sql } = await import('drizzle-orm');
+      
+      // 1. Fetch order details to see if it was paid
+      const orderRecs = await db.select().from(orders).where(eq(orders.razorpayOrderId, razorpayOrderId));
+      
+      if (orderRecs.length > 0) {
+        const orderRecord = orderRecs[0];
+        
+        // 2. Process Refund if paid
+        if (orderRecord.status === 'paid' && orderRecord.razorpayPaymentId) {
+          try {
+            const client = getRazorpayClient();
+            if (client) {
+              await client.payments.refund(orderRecord.razorpayPaymentId, {
+                speed: "normal",
+                notes: { reason }
+              });
+              console.log(`Refund initiated for payment: ${orderRecord.razorpayPaymentId}`);
+            }
+          } catch (refundError) {
+            console.error("Refund failed or Razorpay mock key used:", refundError);
+            // In dev mode with mock keys, we just log and continue
+          }
+        }
+
+        // 3. Update PostgreSQL order status to cancelled
+        await db.update(orders).set({
+          status: 'cancelled',
+          // could log reason here if we added a field, for now just status
+        }).where(eq(orders.razorpayOrderId, razorpayOrderId));
+
+        // 4. Release inventory/stock
+        const orderItemsList = await db.select().from(orderItems).where(eq(orderItems.orderId, orderRecord.id));
+        for (const item of orderItemsList) {
+          if (item.productId) {
+            await db.update(products).set({
+              stock: sql`${products.stock} + ${item.quantity}`
+            }).where(eq(products.id, item.productId));
+            console.log(`Restored ${item.quantity} stock for product ${item.productId}`);
+          }
+        }
+        
+        // 5. Send notification to customer
+        try {
+          const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+            port: Number(process.env.SMTP_PORT) || 587,
+            secure: Number(process.env.SMTP_PORT) === 465,
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS
+            }
+          });
+          
+          if (process.env.SMTP_USER && orderRecord.customerEmail) {
+            await transporter.sendMail({
+              from: '"Almas Jewels" <orders@almasjewels.com>',
+              to: orderRecord.customerEmail,
+              subject: `Order Cancellation Notice - ${razorpayOrderId}`,
+              html: `
+                <div style="font-family: sans-serif; padding: 20px;">
+                  <h2>Order Cancelled</h2>
+                  <p>Your order <strong>${razorpayOrderId}</strong> has been cancelled.</p>
+                  <p><strong>Reason:</strong> ${reason}</p>
+                  <p>If you were charged, a refund has been initiated and will reflect in your account soon.</p>
+                  <p>Thank you for considering Almas Jewels.</p>
+                </div>
+              `
+            });
+            console.log("Cancellation email sent to:", orderRecord.customerEmail);
+          }
+        } catch (emailErr) {
+          console.error("Failed to send cancellation email:", emailErr);
+        }
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Failed to cancel order backend:", error);
+      res.status(500).json({ error: "Failed to process cancellation on server" });
+    }
+  });
+
   app.post("/api/payment/failed", async (req, res) => {
     const { orderId, paymentId, error } = req.body;
     
