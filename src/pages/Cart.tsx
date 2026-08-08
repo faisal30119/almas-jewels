@@ -105,7 +105,7 @@ export default function Cart() {
           {cartItems.map((item) => (
             <div key={item.productId} className="flex gap-6 pb-8 border-b border-gray-200">
               <Link to={`/product/${item.productId}`} className="w-32 h-40 bg-gray-50 flex-shrink-0">
-                <img src={item.product!.image} alt={item.product!.name} className="w-full h-full object-cover mix-blend-multiply" />
+                <img src={item.product!.image} alt={item.product!.name} className="w-full h-full object-cover mix-blend-multiply" referrerPolicy="no-referrer" />
               </Link>
               <div className="flex-1 flex flex-col justify-between">
                 <div>

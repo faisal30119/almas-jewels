@@ -323,7 +323,7 @@ export default function Admin() {
                 </div>
                 {(localPreview || formData.image) && (
                   <div className="mt-3 relative inline-block">
-                    <img src={localPreview || formData.image} alt="Preview" className="w-24 h-24 object-cover rounded border border-gray-200 shadow-sm" />
+                    <img src={localPreview || formData.image} alt="Preview" className="w-24 h-24 object-cover rounded border border-gray-200 shadow-sm" referrerPolicy="no-referrer" />
                     {uploadLoading && (
                       <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded">
                         <div className="w-5 h-5 border-2 border-emerald-900 border-t-transparent rounded-full animate-spin"></div>
@@ -470,7 +470,7 @@ export default function Admin() {
                       <td className="p-3 text-gray-700">{product.id}</td>
                       <td className="p-3 text-gray-900 font-medium">
                         <div className="flex items-center gap-3">
-                          <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded" />
+                          <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded" referrerPolicy="no-referrer" />
                           <span>{product.name}</span>
                         </div>
                       </td>

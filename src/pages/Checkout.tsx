@@ -516,7 +516,7 @@ export default function Checkout() {
               {cartItems.map((item) => (
                 <div key={item.productId} className="flex gap-4 group">
                   <div className="w-20 h-24 bg-white flex-shrink-0">
-                    <img src={item.product!.image} alt={item.product!.name} className="w-full h-full object-cover" />
+                    <img src={item.product!.image} alt={item.product!.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   </div>
                   <div className="flex-1 flex flex-col justify-between">
                     <div>

@@ -11,7 +11,7 @@ import { products as hardcodedProducts, Product } from '../data';
 import { cn } from '../lib/utils';
 
 export default function Profile() {
-  const { user, signOut } = useAuth();
+  const { user, signInWithGoogle, signOut } = useAuth();
   const { wishlistIds, toggleWishlist } = useWishlist();
   
   const [orders, setOrders] = useState<any[]>([]);
@@ -147,8 +147,23 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="pt-20 pb-24 text-center">
-        <p>Please sign in to view your profile.</p>
+      <div className="pt-20 pb-24 px-6 text-center max-w-md mx-auto">
+        <div className="bg-white p-8 border border-emerald-900/10 shadow-sm rounded-sm">
+          <h2 className="text-2xl font-serif text-emerald-950 mb-3">Sign In Required</h2>
+          <p className="text-gray-600 font-light text-sm mb-6 leading-relaxed">
+            Please sign in with your Google account to view your profile, order history, and saved wishlist.
+          </p>
+          <button
+            onClick={async () => {
+              try {
+                await signInWithGoogle();
+              } catch (e) {}
+            }}
+            className="w-full flex items-center justify-center gap-3 bg-emerald-950 text-gold-400 py-3 px-6 uppercase tracking-widest text-xs font-medium hover:bg-emerald-900 transition-colors shadow-sm"
+          >
+            Sign In with Google
+          </button>
+        </div>
       </div>
     );
   }
@@ -287,6 +302,7 @@ export default function Profile() {
                         src={product.image} 
                         alt={product.name}
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        referrerPolicy="no-referrer"
                       />
                     </Link>
                     <div className="p-4 flex flex-col flex-grow bg-white">

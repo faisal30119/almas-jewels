@@ -153,13 +153,14 @@ export default function ProductDetail() {
               style={{
                 transformOrigin: isHovering ? `${mousePos.x}% ${mousePos.y}%` : 'center center'
               }}
+              referrerPolicy="no-referrer"
             />
           </motion.div>
           {/* Thumbnail placeholders */}
           <div className="grid grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="aspect-square bg-gray-200 overflow-hidden opacity-60 hover:opacity-100 cursor-pointer transition-opacity group">
-                <img src={product.image} alt={`${product.name} view ${i}`} className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
+                <img src={product.image} alt={`${product.name} view ${i}`} className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" referrerPolicy="no-referrer" />
               </div>
             ))}
           </div>

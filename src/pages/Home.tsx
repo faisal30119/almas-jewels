@@ -34,6 +34,7 @@ export default function Home() {
             src={heroBrideImg} 
             alt="Elegant Bride wearing Almas Jewels Jewelry" 
             className="w-full h-full object-cover object-center"
+            referrerPolicy="no-referrer"
           />
         </div>
 
@@ -136,7 +137,7 @@ export default function Home() {
             <motion.div variants={fadeInUp} className="group bg-white cursor-pointer relative overflow-hidden aspect-[3/4]">
               <Link to="/shop?category=Bridal%20Sets" className="block w-full h-full">
                 <div className="absolute inset-0 bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                <img src={royalCollectionImg} alt="Bridal Sets" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                <img src={royalCollectionImg} alt="Bridal Sets" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-emerald-950/80 to-transparent">
                   <h3 className="text-xl font-serif text-white mb-1">Bridal Sets</h3>
                   <p className="text-sm text-gold-400 uppercase tracking-widest">Shop Now</p>
@@ -147,7 +148,7 @@ export default function Home() {
             <motion.div variants={fadeInUp} className="group bg-white cursor-pointer relative overflow-hidden aspect-[3/4]">
               <Link to="/shop?category=Necklaces" className="block w-full h-full">
                 <div className="absolute inset-0 bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                <img src={occasionCollectionImg} alt="Necklaces" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                <img src={occasionCollectionImg} alt="Necklaces" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-emerald-950/80 to-transparent">
                   <h3 className="text-xl font-serif text-white mb-1">Necklaces</h3>
                   <p className="text-sm text-gold-400 uppercase tracking-widest">Shop Now</p>
@@ -158,7 +159,7 @@ export default function Home() {
             <motion.div variants={fadeInUp} className="group bg-white cursor-pointer relative overflow-hidden aspect-[3/4]">
               <Link to="/shop?category=Earrings" className="block w-full h-full">
                 <div className="absolute inset-0 bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                <img src={solitaireCollectionImg} alt="Earrings" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                <img src={solitaireCollectionImg} alt="Earrings" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-emerald-950/80 to-transparent">
                   <h3 className="text-xl font-serif text-white mb-1">Earrings</h3>
                   <p className="text-sm text-gold-400 uppercase tracking-widest">Shop Now</p>
@@ -169,7 +170,7 @@ export default function Home() {
             <motion.div variants={fadeInUp} className="group bg-white cursor-pointer relative overflow-hidden aspect-[3/4]">
               <Link to="/shop" className="block w-full h-full">
                 <div className="absolute inset-0 bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                <img src={videoThumbnailImg} alt="All Products" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                <img src={videoThumbnailImg} alt="All Products" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-emerald-950/80 to-transparent">
                   <h3 className="text-xl font-serif text-white mb-1">All Products</h3>
                   <p className="text-sm text-gold-400 uppercase tracking-widest">Shop Now</p>

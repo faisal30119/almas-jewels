@@ -48,20 +48,12 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
   const signInWithGoogle = async () => {
     try {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const isIframe = window.self !== window.top;
-      
-
-
-
-      if (isMobile) {
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        await signInWithPopup(auth, googleProvider);
-      }
+      await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
         console.log("Sign-in popup closed by user or cancelled");
+      } else if (error.code === 'auth/popup-blocked') {
+        alert("Sign-in popup was blocked by your browser. Please allow popups for this site and try again.");
       } else {
         console.error("Error signing in with Google:", error);
         if (error.code === 'auth/unauthorized-domain') {
