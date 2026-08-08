@@ -99,7 +99,7 @@ export default function Admin() {
             name: formData.name,
             price: Number(formData.price),
             stock: Number(formData.stock),
-            image: formData.image || 'https://images.unsplash.com/photo-1599643478514-4a410f081467?q=80&w=600&auto=format&fit=crop',
+            image: formData.image || '/assets/images/collection_occasion_1783595002665.jpg',
             category: formData.category,
             stoneColor: formData.stoneColor,
             plating: formData.plating,
@@ -119,7 +119,7 @@ export default function Admin() {
             name: formData.name,
             price: Number(formData.price),
             stock: Number(formData.stock),
-            image: formData.image || 'https://images.unsplash.com/photo-1599643478514-4a410f081467?q=80&w=600&auto=format&fit=crop', // default placeholder
+            image: formData.image || '/assets/images/collection_occasion_1783595002665.jpg', // default placeholder
             category: formData.category,
             stoneColor: formData.stoneColor,
             plating: formData.plating,

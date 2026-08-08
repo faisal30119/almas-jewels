@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
-import { auth, onAuthStateChanged, signInWithPopup, signInWithRedirect, googleProvider, signOut as firebaseSignOut } from '../lib/firebase';
+import { auth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, googleProvider, signOut as firebaseSignOut } from '../lib/firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -23,6 +23,11 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Process redirect result if user signed in via signInWithRedirect
+    getRedirectResult(auth).catch((error) => {
+      console.error("Error handling redirect result:", error);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       
@@ -51,7 +56,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        console.log("Sign-in popup closed by user or cancelled");
+        console.log("Sign-in popup closed by user or cancelled.");
+        alert("The sign-in popup was closed before completion. If you didn't close it, your browser's popup blocker might have stopped it. Please allow popups for this site and try again.");
       } else if (error.code === 'auth/popup-blocked') {
         alert("Sign-in popup was blocked by your browser. Please allow popups for this site and try again.");
       } else {

@@ -39,7 +39,7 @@ export default function Cart() {
             ...item,
             id: String(item.id),
             stoneColor: item.stone_color || item.stoneColor,
-            image: imageMap[item.image] || item.image
+            image: item.image?.includes('unsplash.com') ? occasionCollectionImg : (imageMap[item.image] || item.image)
           }));
         }
       } catch (err) {
@@ -55,7 +55,7 @@ export default function Cart() {
 
         fbProducts = querySnapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(), image: doc.data().image?.includes('unsplash.com') ? occasionCollectionImg : doc.data().image
         })) as Product[];
       } catch (fbErr) {
         console.error("Failed to fetch from Firebase:", fbErr);

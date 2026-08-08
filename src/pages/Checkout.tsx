@@ -245,7 +245,7 @@ export default function Checkout() {
         currency: orderData.currency,
         name: "Almas Jewels",
         description: "Your Dream Jewelry Purchase",
-        image: "https://images.unsplash.com/photo-1599643478514-4a410f135b5a?w=100&h=100&fit=crop", // Add a small logo
+        image: "/assets/images/collection_solitaire_1783594992085.jpg", // Add a small logo
         order_id: orderData.id,
         handler: handleSuccess,
         prefill: {

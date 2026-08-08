@@ -76,7 +76,7 @@ export default function ProductDetail() {
 
         
         if (docSnap.exists()) {
-          setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
+          setProduct({ id: docSnap.id, ...docSnap.data(), image: docSnap.data().image?.includes('unsplash.com') ? occasionCollectionImg : docSnap.data().image } as Product);
         }
       } catch (err) {
         console.error("Error fetching product:", err);

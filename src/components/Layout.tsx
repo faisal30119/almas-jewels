@@ -21,6 +21,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isReturnPolicyOpen, setIsReturnPolicyOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -72,21 +73,21 @@ export default function Layout() {
           : "bg-emerald-950/95 backdrop-blur-md text-white shadow-md border-white/10"
       )}>
         {/* Left: Logo */}
-        <div className={cn("flex justify-start overflow-hidden transition-all duration-300", isSearchOpen ? "hidden sm:flex sm:flex-1 pr-2" : "flex-1 pr-2")}>
-          <Link to="/" className="text-lg sm:text-xl md:text-2xl font-serif font-bold tracking-widest uppercase shrink-0 truncate">
+        <div className={cn("flex justify-start transition-all duration-300", isSearchOpen ? "hidden lg:flex lg:flex-1 pr-2" : "flex-1 pr-2")}>
+          <Link to="/" className="text-lg sm:text-xl lg:text-2xl font-serif font-bold tracking-widest uppercase whitespace-nowrap shrink-0">
             Almas Jewels
           </Link>
         </div>
         
         {/* Center: Nav Links */}
-        <div className="hidden md:flex flex-1 justify-center gap-10 text-sm uppercase tracking-widest font-medium">
+        <div className="hidden md:flex flex-[2] lg:flex-1 justify-center gap-4 lg:gap-10 text-xs lg:text-sm uppercase tracking-widest font-medium">
           <Link to="/" className="hover:text-gold-400 transition-colors">Home</Link>
-          <Link to="/shop" className="hover:text-gold-400 transition-colors">Shop Collection</Link>
-          <Link to="/track" className="hover:text-gold-400 transition-colors">Track Order</Link>
+          <Link to="/shop" className="hover:text-gold-400 transition-colors whitespace-nowrap">Shop Collection</Link>
+          <Link to="/track" className="hover:text-gold-400 transition-colors whitespace-nowrap">Track Order</Link>
         </div>
         
         {/* Right: Icons & Actions */}
-        <div className="flex flex-1 justify-end items-center gap-3 md:gap-6">
+        <div className="flex flex-1 justify-end items-center gap-3 lg:gap-6">
           <div className="relative flex items-center h-6">
             <AnimatePresence mode="wait">
               {isSearchOpen ? (
@@ -274,7 +275,7 @@ export default function Layout() {
                   <ul className="space-y-4">
                     <li><a href="#" className="hover:text-gold-400 transition-colors">About Us</a></li>
                     <li><a href="#" className="hover:text-gold-400 transition-colors">Shipping Info</a></li>
-                    <li><a href="#" className="hover:text-gold-400 transition-colors">Returns & Exchanges</a></li>
+                    <li><button onClick={() => setIsReturnPolicyOpen(true)} className="hover:text-gold-400 transition-colors">Returns & Exchanges</button></li>
                     <li><a href="#" className="hover:text-gold-400 transition-colors">Privacy Policy</a></li>
                   </ul>
                   <div className="space-y-4">
@@ -311,6 +312,103 @@ export default function Layout() {
           Need help? Chat with us
         </span>
       </a>
+
+      {/* Return & Exchange Policy Modal */}
+      <AnimatePresence>
+        {isReturnPolicyOpen && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm"
+              onClick={() => setIsReturnPolicyOpen(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-3xl max-h-[85vh] bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="flex justify-between items-center p-6 border-b border-gray-100">
+                <h2 className="text-2xl font-serif text-emerald-950">RETURN OR EXCHANGE POLICY</h2>
+                <button 
+                  onClick={() => setIsReturnPolicyOpen(false)}
+                  className="text-gray-400 hover:text-emerald-950 transition-colors p-2"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto custom-scrollbar text-gray-600 text-sm leading-relaxed space-y-6">
+                <p>
+                  We have a <strong className="text-emerald-950">3 Day Return/Exchange policy</strong>, which means you have 3 Days from the date of delivery to register an order return/exchange. Return window will be automatically closed after 3 days. 
+                </p>
+                <p>
+                  You can mail us @ <a href="mailto:almasladiescornersakchi@gmail.com" className="text-emerald-900 font-medium hover:underline">almasladiescornersakchi@gmail.com</a> or WhatsApp us @ <a href="https://wa.me/919973819387" className="text-emerald-900 font-medium hover:underline">+91 99738-19387</a> for the return/exchange request.
+                </p>
+                <p className="font-medium text-emerald-950 bg-emerald-50 p-4 rounded-md">
+                  Refund will be issued as Store Credit in the form of Coupon Code only. 
+                </p>
+                
+                <div>
+                  <h3 className="font-semibold text-emerald-950 mb-3 text-base">Please note:</h3>
+                  <ul className="list-disc pl-5 space-y-2">
+                    <li><strong className="text-emerald-950">UNBOXING VIDEO*</strong> is mandatory in case of any Return/Exchange request.</li>
+                    <li><strong className="text-emerald-950">WE CANNOT ARRANGE A RETURN PICKUP FOR YOU UNLESS YOU HAVE RECEIVED A DAMAGED OR WRONG PRODUCT.</strong></li>
+                    <li>Products purchased during ANY SALE is <strong className="text-emerald-950">NON-REFUNDABLE</strong>. You can only exchange it with some other product or ask for a coupon code of the same value you have paid.</li>
+                    <li>The to and fro courier cost will be borne by you if you wish to return the product. Additionally, there is a shipping fee of ₹100/- for sending the product from our side, which you will need to bear.</li>
+                    <li>For exchange we shall provide you with a unique code once we receive the order back at our warehouse. We shall only provide the value paid for the product returned and not any shipping if applicable. This process can take up to 10 working days upon receiving your order back at our warehouse.</li>
+                    <li>Kindly allow 5-7 days from the delivery date for the returns to be processed and the Coupon Code/ Credit Note to be shared with you.</li>
+                    <li><strong>PLEASE NOTE: WE DO NOT HAVE ANY REFUND POLICY. PLEASE REFRAIN FROM IMPULSIVE BUYING.</strong></li>
+                    <li>Payments made with COD option / Prepaid Option WILL RECEIVE A COUPON CODE WORTH THE SAME AMOUNT AS YOUR PRODUCT VALUE. NO REFUND ON COD OR PREPAID ORDERS.</li>
+                    <li>Please return your products unused in the same condition as you received it. If the products are found to be used or damaged we will not be able to refund your money or help you with exchange.</li>
+                  </ul>
+                </div>
+
+                <div className="bg-gray-50 p-5 rounded-md border border-gray-100">
+                  <h3 className="font-semibold text-emerald-950 mb-2">Customer Support Hours</h3>
+                  <p className="mb-2">Feel free to get in touch with us if you have any doubts or you want further assistance by emailing us at <a href="mailto:almasladiescornersakchi@gmail.com" className="text-emerald-900 font-medium hover:underline">almasladiescornersakchi@gmail.com</a> or send us a message on WhatsApp <a href="https://wa.me/919973819387" className="text-emerald-900 font-medium hover:underline">+91 9973819387</a>.</p>
+                  <p className="mb-2">All your queries will be solved between <strong className="text-emerald-950">Monday-Saturday, 11:00am-5:00pm</strong>. All pending queries will be solved the next day.</p>
+                  <p className="text-red-600 font-medium">We do not work on SUNDAY or on National Holidays.</p>
+                  <p className="mt-3 font-medium text-emerald-950 uppercase text-xs tracking-wider">We cannot help you on Instagram DM or Facebook Message for all order related queries. Kindly Whatsapp us or email us with your query.</p>
+                  <p className="mt-2 text-sm italic">We request you to keep all your communication with us either on email, or on WhatsApp for all your order related queries.</p>
+                </div>
+
+                <p className="font-medium text-emerald-950">
+                  Cancellations will only be possible till the order has not been dispatched from our warehouse. 
+                </p>
+
+                <div className="border-t border-gray-100 pt-6">
+                  <h3 className="font-semibold text-emerald-950 mb-3 text-base">*Ensure that the following address is securely pasted on the return package along with your Full Name and Order ID*</h3>
+                  <div className="bg-emerald-950 text-white p-5 rounded-md text-sm leading-relaxed font-light">
+                    <strong className="block text-gold-400 text-lg mb-2 font-serif">Almas Jewels</strong>
+                    Almas Ladies Corner<br/>
+                    Shop no.08, Block no.05,<br/>
+                    Churi Lane, Sakchi.,<br/>
+                    Jamshedpur, Jharkhand 831001<br/><br/>
+                    <span className="text-gold-400">Phone Number:</span> +91 99738-19387
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6 pb-4">
+                  <h3 className="font-semibold text-emerald-950 mb-3 text-base">How to shoot an Unboxing Video?</h3>
+                  <p>
+                    Start the video from showing a 360 degree view of the parcel in packed condition so as to confirm the parcel is not tampered before. Open the package and the products in front on the camera itself without taking the screen away from the parcel. Check the products in the parcel and if any damage is found, show it in the camera before you switch off the camera.
+                  </p>
+                </div>
+              </div>
+              <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end shrink-0">
+                <button 
+                  onClick={() => setIsReturnPolicyOpen(false)}
+                  className="bg-emerald-950 hover:bg-emerald-900 text-white px-6 py-2.5 rounded font-medium text-sm tracking-wide transition-colors"
+                >
+                  Understood
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
