@@ -34,6 +34,10 @@ export default function Checkout() {
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number} | null>(null);
+  const [couponError, setCouponError] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [shippingDetails, setShippingDetails] = useState({
     firstName: '',
     lastName: '',
@@ -108,7 +112,41 @@ export default function Checkout() {
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product!.price * item.quantity), 0);
   const shipping = subtotal > 0 ? 10 : 0;
-  const total = subtotal + shipping;
+  const discount = appliedCoupon ? appliedCoupon.discount : 0;
+  const total = Math.max(0, subtotal + shipping - discount);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code.');
+      return;
+    }
+    setApplyingCoupon(true);
+    setCouponError('');
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode.trim() })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAppliedCoupon({ code: data.code, discount: data.discountAmount });
+        setCouponCode('');
+      } else {
+        const err = await res.json();
+        setCouponError(err.error || 'Invalid coupon code');
+      }
+    } catch (e) {
+      setCouponError('Failed to validate coupon.');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError('');
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -128,6 +166,87 @@ export default function Checkout() {
     setIsProcessing(true);
     
     try {
+      if (total === 0) {
+        // Complete order without Razorpay using Store Credit
+        try {
+          // Create order
+          const orderResponse = await fetch("/api/payment/create-order", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              amount: 0,
+              currency: "INR",
+              items: cartItems.map(i => ({ productId: i.product?.id || i.productId, quantity: i.quantity, price: i.product?.price || 0 })),
+              shippingDetails,
+              userId: user ? user.uid : null
+            }),
+          });
+          const orderData = await orderResponse.json();
+          const orderId = orderData.id;
+
+          if (user) {
+            await addDoc(collection(db, 'orders'), {
+              userId: user.uid,
+              orderId: orderId,
+              amount: total,
+              items: cartItems.map(item => ({
+                id: item.product?.id || item.productId || (item as any).id || "unknown_id",
+                name: item.product?.name || (item as any).name || 'Unknown Item',
+                quantity: item.quantity || 1,
+                price: item.product?.price || (item as any).price || 0
+              })),
+              shippingDetails: {
+                name: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
+                address: shippingDetails.address,
+                city: shippingDetails.city,
+                postalCode: shippingDetails.postalCode
+              },
+              status: 'Processing',
+              paymentMethod: 'Store Credit',
+              createdAt: new Date().toISOString()
+            });
+          }
+
+          await fetch("/api/payment/success", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId: orderId,
+              paymentId: "STORE_CREDIT",
+              customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
+              customerEmail: shippingDetails.email,
+              customerPhone: shippingDetails.phone,
+              customerAddress: `${shippingDetails.address}, ${shippingDetails.city} - ${shippingDetails.postalCode}`,
+              amount: total,
+              cartItems: cartItems.map(item => ({
+                name: item.product?.name || (item as any).name || 'Unknown Item',
+                quantity: item.quantity || 1,
+                price: item.product?.price || (item as any).price || 0
+              }))
+            })
+          });
+
+          // Invalidate coupon code
+          if (appliedCoupon) {
+            await fetch("/api/coupons/invalidate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code: appliedCoupon.code })
+            });
+          }
+
+          clearCart();
+          navigate('/success');
+        } catch (err) {
+          console.error("Error saving zero-total order", err);
+          alert("Failed to save order.");
+          setIsProcessing(false);
+        }
+        return;
+      }
+
       // Load Razorpay script
       const res = await new Promise((resolve) => {
         const script = document.createElement("script");
@@ -559,6 +678,44 @@ export default function Checkout() {
             </div>
 
             <div className="border-t border-emerald-950/10 pt-6 space-y-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Coupon code (Store Credit)"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  disabled={!!appliedCoupon || applyingCoupon}
+                  className="flex-1 bg-transparent border-b border-emerald-950/30 px-0 py-2 focus:border-emerald-950 focus:outline-none placeholder:text-gray-400 font-light text-sm uppercase transition-colors disabled:opacity-50"
+                />
+                {!appliedCoupon ? (
+                  <button
+                    type="button"
+                    onClick={applyCoupon}
+                    disabled={applyingCoupon || !couponCode.trim()}
+                    className="text-xs uppercase tracking-widest text-emerald-900 font-medium hover:text-gold-500 transition-colors disabled:opacity-50"
+                  >
+                    {applyingCoupon ? 'Applying...' : 'Apply'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={removeCoupon}
+                    className="text-xs uppercase tracking-widest text-red-500 font-medium hover:text-red-600 transition-colors"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
+              {appliedCoupon && (
+                <div className="bg-emerald-50 text-emerald-800 text-xs p-2 rounded flex justify-between items-center border border-emerald-100">
+                  <span className="font-medium tracking-wide">Coupon {appliedCoupon.code} applied</span>
+                  <span>-₹{appliedCoupon.discount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-emerald-950/10 pt-6 space-y-4">
               <div className="flex justify-between text-gray-600 font-light text-sm">
                 <span>Subtotal</span>
                 <span>₹{subtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
@@ -567,6 +724,12 @@ export default function Checkout() {
                 <span>Shipping</span>
                 <span>₹{shipping.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-emerald-600 font-medium text-sm">
+                  <span>Store Credit</span>
+                  <span>-₹{appliedCoupon.discount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+              )}
               <div className="flex justify-between text-emerald-950 font-serif text-xl pt-4 border-t border-emerald-950/10">
                 <span>Total</span>
                 <span>₹{total.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>

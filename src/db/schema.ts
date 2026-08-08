@@ -43,3 +43,11 @@ export const orderItems = pgTable('order_items', {
   quantity: integer('quantity').notNull(),
   price: integer('price').notNull(),
 });
+
+export const coupons = pgTable('coupons', {
+  id: serial('id').primaryKey(),
+  code: text('code').notNull().unique(),
+  discountAmount: integer('discount_amount').notNull(),
+  isActive: integer('is_active').default(1).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

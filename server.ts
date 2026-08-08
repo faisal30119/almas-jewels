@@ -5,7 +5,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { requireAuth, requireAdmin, AuthRequest } from "./src/middleware/auth.ts";
 import { db } from "./src/db/index.ts";
-import { users, products, orders, orderItems } from "./src/db/schema.ts";
+import { users, products, orders, orderItems, coupons } from "./src/db/schema.ts";
 import { eq, lt } from "drizzle-orm";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
@@ -230,6 +230,8 @@ async function startServer() {
         data = await db.select().from(orders).limit(100);
       } else if (table === 'order_items') {
         data = await db.select().from(orderItems).limit(100);
+      } else if (table === 'coupons') {
+        data = await db.select().from(coupons).limit(100);
       } else {
         return res.status(400).json({ error: 'Invalid table' });
       }
@@ -301,17 +303,59 @@ async function startServer() {
     }
   });
 
+  // Coupons API
+  app.post("/api/coupons/validate", async (req, res) => {
+    const { code } = req.body;
+    try {
+      const coupon = await db.select().from(coupons).where(eq(coupons.code, code.toUpperCase())).limit(1);
+      if (coupon.length > 0 && coupon[0].isActive === 1) {
+        res.json(coupon[0]);
+      } else {
+        res.status(404).json({ error: "Invalid or expired coupon" });
+      }
+    } catch (error) {
+      console.error("Failed to validate coupon:", error);
+      res.status(500).json({ error: "Failed to validate coupon" });
+    }
+  });
+
+  app.post("/api/admin/coupons", requireAdmin, async (req: AuthRequest, res) => {
+    const { code, discountAmount } = req.body;
+    try {
+      const result = await db.insert(coupons).values({
+        code: code.toUpperCase(),
+        discountAmount: Number(discountAmount),
+        isActive: 1
+      }).returning();
+      res.json(result[0]);
+    } catch (error) {
+      console.error("Failed to create coupon:", error);
+      res.status(500).json({ error: "Failed to create coupon" });
+    }
+  });
+
+  app.post("/api/coupons/invalidate", async (req, res) => {
+    const { code } = req.body;
+    try {
+      await db.update(coupons).set({ isActive: 0 }).where(eq(coupons.code, code.toUpperCase()));
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to invalidate coupon:", error);
+      res.status(500).json({ error: "Failed to invalidate coupon" });
+    }
+  });
+
   // Razorpay Create Order Endpoint
   app.post("/api/payment/create-order", async (req, res) => {
     const { amount, currency = "INR", items, shippingDetails, userId } = req.body;
     
-    if (!amount) {
+    if (amount === undefined) {
       res.status(400).json({ error: "Amount is required" });
       return;
     }
     
-    if (amount * 100 < 100) {
-      res.status(400).json({ error: "Amount must be at least 1 INR (100 paise)" });
+    if (amount * 100 < 100 && amount !== 0) {
+      res.status(400).json({ error: "Amount must be at least 1 INR (100 paise) or 0" });
       return;
     }
 
@@ -319,12 +363,6 @@ async function startServer() {
     let order: any = null;
 
     try {
-      const options = {
-        amount: amount * 100,
-        currency,
-        receipt: `receipt_${Math.random().toString(36).substring(7)}`
-      };
-      
       let pgUserId = null;
       if (userId) {
         const { eq } = await import('drizzle-orm');
@@ -337,32 +375,41 @@ async function startServer() {
         }
       }
 
-      if (client) {
-        try {
-          order = await client.orders.create(options);
-        } catch (e: any) {
-          console.error("Razorpay API failed:", e.error || e);
-          const errorDesc = e.error?.description || "Payment gateway authentication failed";
-          
-          await db.insert(orders).values({
-            userId: pgUserId,
-            totalAmount: amount * 100,
-            status: 'failed',
-            customerName: shippingDetails ? `${shippingDetails.firstName} ${shippingDetails.lastName}` : null,
-            customerEmail: shippingDetails ? shippingDetails.email : null,
-            customerPhone: shippingDetails ? shippingDetails.phone : null,
-            customerAddress: shippingDetails ? `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.postalCode}` : null,
-            razorpayOrderId: null,
-          });
-          
-          if (e.statusCode === 401 || e.statusCode === 503) {
-            return res.status(401).json({ error: "Razorpay authentication failed" });
-          }
-
-          return res.status(500).json({ error: errorDesc });
-        }
+      if (amount === 0) {
+        order = { id: 'ORD_CREDIT_' + Math.random().toString(36).substring(7) };
       } else {
-        return res.status(500).json({ error: "Razorpay is not configured on the server." });
+        const options = {
+          amount: amount * 100,
+          currency,
+          receipt: `receipt_${Math.random().toString(36).substring(7)}`
+        };
+        
+        if (client) {
+          try {
+            order = await client.orders.create(options);
+          } catch (e: any) {
+            console.error("Razorpay API failed:", e.error || e);
+            const errorDesc = e.error?.description || "Payment gateway authentication failed";
+            
+            await db.insert(orders).values({
+              userId: pgUserId,
+              totalAmount: amount * 100,
+              status: 'failed',
+              customerName: shippingDetails ? `${shippingDetails.firstName} ${shippingDetails.lastName}` : null,
+              customerEmail: shippingDetails ? shippingDetails.email : null,
+              customerPhone: shippingDetails ? shippingDetails.phone : null,
+              customerAddress: shippingDetails ? `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.postalCode}` : null,
+              razorpayOrderId: null,
+            });
+            
+            if (e.statusCode === 401 || e.statusCode === 503) {
+              return res.status(401).json({ error: "Razorpay authentication failed" });
+            }
+            return res.status(500).json({ error: errorDesc });
+          }
+        } else {
+          return res.status(500).json({ error: "Razorpay is not configured on the server." });
+        }
       }
       
       const [newOrder] = await db.insert(orders).values({
@@ -405,17 +452,19 @@ async function startServer() {
     const secret = process.env.RAZORPAY_KEY_SECRET;
     
     // Verify signature
-    if (!secret || !razorpay_signature || !orderId || !paymentId) {
-      res.status(400).json({ error: "Missing required fields for signature verification" });
-      return;
-    }
-    const generatedSignature = crypto.createHmac("sha256", secret)
-                                    .update(orderId + "|" + paymentId)
-                                    .digest("hex");
-                                    
-    if (generatedSignature !== razorpay_signature && razorpay_signature !== 'mock_signature') {
-      res.status(400).json({ error: "Invalid payment signature" });
-      return;
+    if (paymentId !== "STORE_CREDIT") {
+      if (!secret || !razorpay_signature || !orderId || !paymentId) {
+        res.status(400).json({ error: "Missing required fields for signature verification" });
+        return;
+      }
+      const generatedSignature = crypto.createHmac("sha256", secret)
+                                      .update(orderId + "|" + paymentId)
+                                      .digest("hex");
+                                      
+      if (generatedSignature !== razorpay_signature && razorpay_signature !== 'mock_signature') {
+        res.status(400).json({ error: "Invalid payment signature" });
+        return;
+      }
     }
 
     console.log(`Payment successful for order: ${orderId}, paymentId: ${paymentId}`);

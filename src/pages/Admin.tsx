@@ -11,7 +11,9 @@ export default function Admin() {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'add' | 'db' | 'alerts'>('add');
+  const [activeTab, setActiveTab] = useState<'add' | 'db' | 'alerts' | 'coupons'>('add');
+  const [couponFormData, setCouponFormData] = useState({ code: '', discountAmount: '' });
+  const [couponMessage, setCouponMessage] = useState('');
   const [dbData, setDbData] = useState<any[]>([]);
     const [activeTable, setActiveTable] = useState('users');
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
@@ -148,6 +150,33 @@ export default function Admin() {
     }
   };
 
+  const handleCouponSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || user.email !== 'faisal301196@gmail.com') return;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/admin/coupons', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          code: couponFormData.code,
+          discountAmount: couponFormData.discountAmount
+        })
+      });
+      if (res.ok) {
+        setCouponMessage('Coupon created successfully!');
+        setCouponFormData({ code: '', discountAmount: '' });
+      } else {
+        setCouponMessage('Failed to create coupon.');
+      }
+    } catch (error) {
+      setCouponMessage('Error creating coupon.');
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'db') {
       fetchTableData(activeTable);
@@ -248,6 +277,12 @@ export default function Admin() {
               {lowStockProducts.length}
             </span>
           )}
+        </button>
+        <button 
+          onClick={() => setActiveTab('coupons')}
+          className={`flex items-center gap-2 py-3 px-6 font-medium whitespace-nowrap ${activeTab === 'coupons' ? 'border-b-2 border-emerald-950 text-emerald-950' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          Store Credit (Coupons)
         </button>
       </div>
 
@@ -378,7 +413,7 @@ export default function Admin() {
       {activeTab === 'db' && (
         <div>
           <div className="flex gap-4 mb-6">
-            {['users', 'products', 'orders', 'order_items'].map(table => (
+            {['users', 'products', 'orders', 'order_items', 'coupons'].map(table => (
               <button
                 key={table}
                 onClick={() => setActiveTable(table)}
@@ -485,6 +520,65 @@ export default function Admin() {
               </table>
             </div>
           )}
+        </div>
+      )}
+      
+      {activeTab === 'coupons' && (
+        <div className="max-w-2xl">
+          <h2 className="text-xl font-medium text-emerald-950 mb-6">Generate Store Credit (Coupon)</h2>
+          <form onSubmit={handleCouponSubmit} className="space-y-6">
+            {couponMessage && (
+              <div className={`p-4 ${couponMessage.includes('Error') || couponMessage.includes('Failed') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                {couponMessage}
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-emerald-950 mb-2">Coupon Code</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  value={couponFormData.code}
+                  onChange={(e) => setCouponFormData({...couponFormData, code: e.target.value.toUpperCase()})}
+                  className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:border-emerald-950 uppercase"
+                  placeholder="e.g. RETURN1000"
+                />
+                <button
+                  type="button"
+                  onClick={() => setCouponFormData({...couponFormData, code: 'REFUND_' + Math.random().toString(36).substr(2, 6).toUpperCase()})}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition-colors text-sm"
+                >
+                  Generate Random
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-emerald-950 mb-2">Store Credit Amount (₹)</label>
+              <input
+                type="number"
+                required
+                value={couponFormData.discountAmount}
+                onChange={(e) => setCouponFormData({...couponFormData, discountAmount: e.target.value})}
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:border-emerald-950"
+                placeholder="e.g. 1500"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-8 py-3 bg-emerald-950 text-white font-medium hover:bg-emerald-900 transition-colors w-full"
+            >
+              Create Coupon Code
+            </button>
+          </form>
+          
+          <div className="mt-12 bg-emerald-50 p-6 border border-emerald-100 rounded">
+            <h3 className="font-semibold text-emerald-900 mb-2">Return Policy Note</h3>
+            <p className="text-sm text-emerald-800 leading-relaxed">
+              As per the return policy, refunds are issued only as Store Credit. 
+              Generate a unique coupon code here and share it with the customer. 
+              The customer can apply this code during their next checkout to deduct the amount from their order.
+            </p>
+          </div>
         </div>
       )}
     </div>
