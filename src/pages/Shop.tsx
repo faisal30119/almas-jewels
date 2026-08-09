@@ -5,11 +5,21 @@ import { Filter, Loader2, Heart } from 'lucide-react';
 import royalCollectionImg from '../assets/images/collection_royal_1783594977165.jpg';
 import solitaireCollectionImg from '../assets/images/collection_solitaire_1783594992085.jpg';
 import occasionCollectionImg from '../assets/images/collection_occasion_1783595002665.jpg';
+import pendantMainImg from '../assets/images/pendant_butterfly_main_1786265928025.jpg';
+import pendantSub1Img from '../assets/images/pendant_butterfly_sub1_1786265950218.jpg';
+import pendantSub2Img from '../assets/images/pendant_butterfly_sub2_1786265975946.jpg';
+import pendantSub3Img from '../assets/images/pendant_butterfly_sub3_1786265998640.jpg';
+
 
 const imageMap: Record<string, string> = {
   '/assets/images/collection_royal_1783594977165.jpg': royalCollectionImg,
   '/assets/images/collection_solitaire_1783594992085.jpg': solitaireCollectionImg,
   '/assets/images/collection_occasion_1783595002665.jpg': occasionCollectionImg,
+  '/assets/images/pendant_butterfly_main_1786265928025.jpg': pendantMainImg,
+  '/assets/images/pendant_butterfly_sub1_1786265950218.jpg': pendantSub1Img,
+  '/assets/images/pendant_butterfly_sub2_1786265975946.jpg': pendantSub2Img,
+  '/assets/images/pendant_butterfly_sub3_1786265998640.jpg': pendantSub3Img,
+
 };
 
 import { products as hardcodedProducts, Product, categories, stoneColors, platings, priceRanges } from '../data';
@@ -35,7 +45,7 @@ export default function Shop() {
         const res = await fetch('/api/products');
         if (res.ok) {
           const data = await res.json();
-          pgProducts = data.map((item: any) => ({
+          pgProducts = (Array.isArray(data) ? data : []).map((item: any) => ({
             ...item,
             id: String(item.id),
             stoneColor: item.stone_color || item.stoneColor,

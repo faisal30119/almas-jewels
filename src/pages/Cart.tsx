@@ -7,11 +7,21 @@ import { useCart } from '../context/CartContext';
 import royalCollectionImg from '../assets/images/collection_royal_1783594977165.jpg';
 import solitaireCollectionImg from '../assets/images/collection_solitaire_1783594992085.jpg';
 import occasionCollectionImg from '../assets/images/collection_occasion_1783595002665.jpg';
+import pendantMainImg from '../assets/images/pendant_butterfly_main_1786265928025.jpg';
+import pendantSub1Img from '../assets/images/pendant_butterfly_sub1_1786265950218.jpg';
+import pendantSub2Img from '../assets/images/pendant_butterfly_sub2_1786265975946.jpg';
+import pendantSub3Img from '../assets/images/pendant_butterfly_sub3_1786265998640.jpg';
+
 
 const imageMap: Record<string, string> = {
   '/assets/images/collection_royal_1783594977165.jpg': royalCollectionImg,
   '/assets/images/collection_solitaire_1783594992085.jpg': solitaireCollectionImg,
   '/assets/images/collection_occasion_1783595002665.jpg': occasionCollectionImg,
+  '/assets/images/pendant_butterfly_main_1786265928025.jpg': pendantMainImg,
+  '/assets/images/pendant_butterfly_sub1_1786265950218.jpg': pendantSub1Img,
+  '/assets/images/pendant_butterfly_sub2_1786265975946.jpg': pendantSub2Img,
+  '/assets/images/pendant_butterfly_sub3_1786265998640.jpg': pendantSub3Img,
+
 };
 
 import { products as hardcodedProducts, Product } from '../data';
@@ -35,7 +45,7 @@ export default function Cart() {
         const res = await fetch('/api/products');
         if (res.ok) {
           const data = await res.json();
-          pgProducts = data.map((item: any) => ({
+          pgProducts = (Array.isArray(data) ? data : []).map((item: any) => ({
             ...item,
             id: String(item.id),
             stoneColor: item.stone_color || item.stoneColor,
@@ -125,12 +135,12 @@ export default function Cart() {
                   <p className="text-gray-500 font-light text-sm mb-4">{item.product!.category}</p>
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between w-full">
                   <div className="flex items-center border border-gray-200">
                     <button 
                       type="button"
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                      className="p-3 text-gray-500 hover:text-emerald-950 transition-colors"
+                      className="p-3 text-gray-500 hover:text-emerald-950 transition-colors flex items-center justify-center"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -138,12 +148,12 @@ export default function Cart() {
                     <button 
                       type="button"
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className="p-3 text-gray-500 hover:text-emerald-950 transition-colors"
+                      className="p-3 text-gray-500 hover:text-emerald-950 transition-colors flex items-center justify-center"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
-                  <span className="font-medium text-emerald-950 text-lg">
+                  <span className="font-medium text-emerald-950 text-lg ml-4">
                     ₹{(item.product!.price * item.quantity).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                   </span>
                 </div>

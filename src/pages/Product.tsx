@@ -6,11 +6,21 @@ import { WhatsAppIcon } from '../components/icons';
 import royalCollectionImg from '../assets/images/collection_royal_1783594977165.jpg';
 import solitaireCollectionImg from '../assets/images/collection_solitaire_1783594992085.jpg';
 import occasionCollectionImg from '../assets/images/collection_occasion_1783595002665.jpg';
+import pendantMainImg from '../assets/images/pendant_butterfly_main_1786265928025.jpg';
+import pendantSub1Img from '../assets/images/pendant_butterfly_sub1_1786265950218.jpg';
+import pendantSub2Img from '../assets/images/pendant_butterfly_sub2_1786265975946.jpg';
+import pendantSub3Img from '../assets/images/pendant_butterfly_sub3_1786265998640.jpg';
+
 
 const imageMap: Record<string, string> = {
   '/assets/images/collection_royal_1783594977165.jpg': royalCollectionImg,
   '/assets/images/collection_solitaire_1783594992085.jpg': solitaireCollectionImg,
   '/assets/images/collection_occasion_1783595002665.jpg': occasionCollectionImg,
+  '/assets/images/pendant_butterfly_main_1786265928025.jpg': pendantMainImg,
+  '/assets/images/pendant_butterfly_sub1_1786265950218.jpg': pendantSub1Img,
+  '/assets/images/pendant_butterfly_sub2_1786265975946.jpg': pendantSub2Img,
+  '/assets/images/pendant_butterfly_sub3_1786265998640.jpg': pendantSub3Img,
+
 };
 
 import { products as hardcodedProducts, Product } from '../data';
@@ -31,6 +41,14 @@ export default function ProductDetail() {
   
   const [quantity, setQuantity] = useState(1);
   const [activeAccordion, setActiveAccordion] = useState<string | null>('inclusions');
+  const [mainImage, setMainImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (product) {
+      setMainImage(product.image);
+    }
+  }, [product]);
+
   const [isAdded, setIsAdded] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -144,7 +162,7 @@ export default function ProductDetail() {
             onMouseLeave={() => setIsHovering(false)}
           >
             <img 
-              src={product.image} 
+              src={mainImage || product.image} 
               alt={product.name} 
               className={cn(
                 "w-full h-full object-cover transition-transform duration-300 ease-out origin-center",
@@ -157,10 +175,19 @@ export default function ProductDetail() {
             />
           </motion.div>
           {/* Thumbnail placeholders */}
-          <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="aspect-square bg-gray-200 overflow-hidden opacity-60 hover:opacity-100 cursor-pointer transition-opacity group">
-                <img src={product.image} alt={`${product.name} view ${i}`} className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" referrerPolicy="no-referrer" />
+          <div className="grid grid-cols-5 gap-2">
+            {(product.name.includes("Rubans Pendant") 
+              ? [
+                  '/assets/images/61iXLd1O+OL._SY695_.jpg', 
+                  '/assets/images/61cPASED62L._SY695_.jpg', 
+                  '/assets/images/61vDXnCmbpL._SY695_.jpg', 
+                  '/assets/images/71V52eCgCNL._SY695_.jpg', 
+                  '/assets/images/51yFEaupQUL._SY695_.jpg'
+                ]
+              : [product.image, product.image, product.image, product.image, product.image]
+            ).map((img, i) => (
+              <div key={i} onClick={() => setMainImage(img)} className={`aspect-square bg-gray-200 overflow-hidden cursor-pointer transition-opacity group ${mainImage === img ? 'ring-2 ring-emerald-950 opacity-100' : 'opacity-60 hover:opacity-100'}`}>
+                <img src={img} alt={`${product.name} view ${i}`} className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" referrerPolicy="no-referrer" />
               </div>
             ))}
           </div>
@@ -280,7 +307,7 @@ export default function ProductDetail() {
                       className="overflow-hidden"
                     >
                       <ul className="pb-6 pl-4 space-y-2 text-gray-600 font-light list-disc">
-                        {product.inclusions.map((inc, i) => (
+                        {(product.inclusions || []).map((inc, i) => (
                           <li key={i}>{inc}</li>
                         ))}
                       </ul>

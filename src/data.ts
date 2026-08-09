@@ -98,6 +98,7 @@ export const categories = [
   'Bridal Sets',
   'Necklaces',
   'Earrings',
+  'Pendants',
   'Oxidise jewelry',
   'American Diamond (AD) / CZ',
   'Polki Jewelry',
