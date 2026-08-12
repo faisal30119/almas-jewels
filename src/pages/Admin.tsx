@@ -101,7 +101,7 @@ export default function Admin() {
             name: formData.name,
             price: Number(formData.price),
             stock: Number(formData.stock),
-            image: formData.image || '/assets/images/collection_occasion_1783595002665.jpg',
+            image: formData.image || 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277883/almas_bridal/assets/brxuufifingum5xyjodn.jpg',
             category: formData.category,
             stoneColor: formData.stoneColor,
             plating: formData.plating,
@@ -121,7 +121,7 @@ export default function Admin() {
             name: formData.name,
             price: Number(formData.price),
             stock: Number(formData.stock),
-            image: formData.image || '/assets/images/collection_occasion_1783595002665.jpg', // default placeholder
+            image: formData.image || 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277883/almas_bridal/assets/brxuufifingum5xyjodn.jpg', // default placeholder
             category: formData.category,
             stoneColor: formData.stoneColor,
             plating: formData.plating,

@@ -12,23 +12,23 @@ import { Lock, Loader2, ArrowLeft, Shield, LogIn, Trash2, Phone, Plus, Minus } f
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
-import royalCollectionImg from '../assets/images/collection_royal_1783594977165.jpg';
-import solitaireCollectionImg from '../assets/images/collection_solitaire_1783594992085.jpg';
-import occasionCollectionImg from '../assets/images/collection_occasion_1783595002665.jpg';
-import pendantMainImg from '../assets/images/pendant_butterfly_main_1786265928025.jpg';
-import pendantSub1Img from '../assets/images/pendant_butterfly_sub1_1786265950218.jpg';
-import pendantSub2Img from '../assets/images/pendant_butterfly_sub2_1786265975946.jpg';
-import pendantSub3Img from '../assets/images/pendant_butterfly_sub3_1786265998640.jpg';
+const royalCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277886/almas_bridal/assets/dpjqxedlu5oleauyj40l.jpg';
+const solitaireCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277888/almas_bridal/assets/uoge8dcesrge8bsgimj6.jpg';
+const occasionCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277883/almas_bridal/assets/brxuufifingum5xyjodn.jpg';
+const pendantMainImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277893/almas_bridal/assets/panbrhgotshii2pl5zkb.jpg';
+const pendantSub1Img = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277895/almas_bridal/assets/blteocmlx1mlsl7qtzx0.jpg';
+const pendantSub2Img = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277897/almas_bridal/assets/uffidivwpwv2wicg7m71.jpg';
+const pendantSub3Img = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277900/almas_bridal/assets/e5g5yagqr1ksbakallnl.jpg';
 
 
 const imageMap: Record<string, string> = {
-  '/assets/images/collection_royal_1783594977165.jpg': royalCollectionImg,
-  '/assets/images/collection_solitaire_1783594992085.jpg': solitaireCollectionImg,
-  '/assets/images/collection_occasion_1783595002665.jpg': occasionCollectionImg,
-  '/assets/images/pendant_butterfly_main_1786265928025.jpg': pendantMainImg,
-  '/assets/images/pendant_butterfly_sub1_1786265950218.jpg': pendantSub1Img,
-  '/assets/images/pendant_butterfly_sub2_1786265975946.jpg': pendantSub2Img,
-  '/assets/images/pendant_butterfly_sub3_1786265998640.jpg': pendantSub3Img,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277886/almas_bridal/assets/dpjqxedlu5oleauyj40l.jpg': royalCollectionImg,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277888/almas_bridal/assets/uoge8dcesrge8bsgimj6.jpg': solitaireCollectionImg,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277883/almas_bridal/assets/brxuufifingum5xyjodn.jpg': occasionCollectionImg,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277893/almas_bridal/assets/panbrhgotshii2pl5zkb.jpg': pendantMainImg,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277895/almas_bridal/assets/blteocmlx1mlsl7qtzx0.jpg': pendantSub1Img,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277897/almas_bridal/assets/uffidivwpwv2wicg7m71.jpg': pendantSub2Img,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277900/almas_bridal/assets/e5g5yagqr1ksbakallnl.jpg': pendantSub3Img,
 
 };
 
@@ -39,7 +39,7 @@ import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore
 
 export default function Checkout() {
   const { items, cartCount, clearCart, removeFromCart, updateQuantity } = useCart();
-  const { user, loading, signInWithGoogle } = useAuth();
+  const { user, loading, openAuthModal } = useAuth();
   const navigate = useNavigate();
   
   const [isProcessing, setIsProcessing] = useState(false);
@@ -374,7 +374,7 @@ export default function Checkout() {
         currency: orderData.currency,
         name: "Almas Jewels",
         description: "Your Dream Jewelry Purchase",
-        image: "/assets/images/collection_solitaire_1783594992085.jpg", // Add a small logo
+        image: "https://res.cloudinary.com/niagn9pn/image/upload/v1786277888/almas_bridal/assets/uoge8dcesrge8bsgimj6.jpg", // Add a small logo
         order_id: orderData.id,
         handler: handleSuccess,
         prefill: {
@@ -580,15 +580,11 @@ export default function Checkout() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button 
                   type="button"
-                  onClick={async () => {
-                    try {
-                      await signInWithGoogle();
-                    } catch (e) {}
-                  }}
+                  onClick={() => openAuthModal('login')}
                   className="flex items-center justify-center gap-2 bg-white text-emerald-950 border border-emerald-950 px-6 py-2 uppercase tracking-widest text-xs font-medium hover:bg-emerald-950 hover:text-white transition-colors"
                 >
                   <LogIn className="w-4 h-4" />
-                  Google
+                  Sign In / Register
                 </button>
               </div>
             </section>

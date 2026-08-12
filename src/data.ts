@@ -1,6 +1,7 @@
-import royalCollectionImg from './assets/images/collection_royal_1783594977165.jpg';
-import solitaireCollectionImg from './assets/images/collection_solitaire_1783594992085.jpg';
-import occasionCollectionImg from './assets/images/collection_occasion_1783595002665.jpg';
+const royalCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277886/almas_bridal/assets/dpjqxedlu5oleauyj40l.jpg';
+const solitaireCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277888/almas_bridal/assets/uoge8dcesrge8bsgimj6.jpg';
+const occasionCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277883/almas_bridal/assets/brxuufifingum5xyjodn.jpg';
+const pendantMainImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277879/almas_bridal/assets/dwicfvexas9ouzwhu56z.jpg';
 
 export type Product = {
   id: string;
@@ -91,7 +92,18 @@ export const products: Product[] = [
     plating: 'Rhodium',
     description: 'Green Pendant Necklace',
     inclusions: ['Pendant']
-  }
+  },
+  {
+    id: 'p7',
+    name: 'Rubans Pendant Western Jewellery',
+    price: 399,
+    image: pendantMainImg,
+    category: 'Pendants',
+    stoneColor: 'Clear',
+    plating: 'Rose Gold',
+    description: 'Luxurious 18K Rose Gold Plating: This necklace boasts a stunning rose gold finish that exudes elegance and sophistication.\nTimeless Design: Featuring a classic and versatile design, this necklace can be effortlessly styled for both casual and formal occasions.\nHigh-Quality Craftsmanship: Made with meticulous attention to detail and using premium materials, ensuring durability and long-lasting shine.\nAdjustable Chain Length: The necklace includes an adjustable chain, allowing for a customized fit and versatility in styling.\nIdeal Gift Choice: With its luxurious appearance and timeless appeal, this necklace makes a perfect gift for various celebrations and milestones.',
+    inclusions: ['Pendant', 'Adjustable Chain']
+  },
 ];
 
 export const categories = [

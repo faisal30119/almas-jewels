@@ -12,7 +12,7 @@ export default function Success() {
 
   return (
     <div className="min-h-screen flex items-center justify-center pt-20 pb-24 px-6 relative overflow-hidden bg-emerald-950">
-      <div className="absolute inset-0 bg-[url('/assets/images/collection_royal_1783594977165.jpg')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
+      <div className="absolute inset-0 bg-[url('https://res.cloudinary.com/niagn9pn/image/upload/v1786277886/almas_bridal/assets/dpjqxedlu5oleauyj40l.jpg')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/80 to-emerald-950"></div>
       
       <motion.div 

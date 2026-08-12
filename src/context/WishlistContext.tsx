@@ -24,7 +24,7 @@ const WishlistContext = createContext<WishlistContextType>({
 export const useWishlist = () => useContext(WishlistContext);
 
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +74,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const toggleWishlist = async (product: Product) => {
     if (!user) {
-      // In a real app, maybe trigger sign in
+      openAuthModal('login');
       return;
     }
 

@@ -1,11 +1,11 @@
 import { motion } from 'motion/react';
 import { ArrowRight, CheckCircle, Gem, Play, Shield, Star, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import heroBrideImg from '../assets/images/hero_bride_1783594960993.jpg';
-import royalCollectionImg from '../assets/images/collection_royal_1783594977165.jpg';
-import solitaireCollectionImg from '../assets/images/collection_solitaire_1783594992085.jpg';
-import occasionCollectionImg from '../assets/images/collection_occasion_1783595002665.jpg';
-import videoThumbnailImg from '../assets/images/video_thumbnail_1783595014567.jpg';
+const heroBrideImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277890/almas_bridal/assets/wfnbs0fyl677rj20wiqr.jpg';
+const royalCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277886/almas_bridal/assets/dpjqxedlu5oleauyj40l.jpg';
+const solitaireCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277888/almas_bridal/assets/uoge8dcesrge8bsgimj6.jpg';
+const occasionCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277883/almas_bridal/assets/brxuufifingum5xyjodn.jpg';
+const videoThumbnailImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277903/almas_bridal/assets/fztrpcjlj5pg5rntxdvn.jpg';
 
 export default function Home() {
   const fadeInUp = {

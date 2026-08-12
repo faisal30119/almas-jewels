@@ -1,18 +1,45 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
-import { auth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, googleProvider, signOut as firebaseSignOut } from '../lib/firebase';
+import { 
+  auth, 
+  onAuthStateChanged, 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  googleProvider, 
+  signOut as firebaseSignOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile
+} from '../lib/firebase';
+import AuthModal from '../components/AuthModal';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAuthModalOpen: boolean;
+  authModalMode: 'login' | 'register' | 'forgot';
+  openAuthModal: (mode?: 'login' | 'register' | 'forgot') => void;
+  closeAuthModal: () => void;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  isAuthModalOpen: false,
+  authModalMode: 'login',
+  openAuthModal: () => {},
+  closeAuthModal: () => {},
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
+  signUpWithEmail: async () => {},
+  resetPassword: async () => {},
   signOut: async () => {}
 });
 
@@ -21,6 +48,18 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'forgot'>('login');
+
+  const openAuthModal = (mode: 'login' | 'register' | 'forgot' = 'login') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
+  };
 
   useEffect(() => {
     // Process redirect result if user signed in via signInWithRedirect
@@ -51,28 +90,53 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     return unsubscribe;
   }, []);
 
+  const signInWithEmail = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signUpWithEmail = async (email: string, password: string, firstName?: string, lastName?: string) => {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const fullName = [firstName, lastName].filter(Boolean).join(' ');
+    if (fullName && cred.user) {
+      await updateProfile(cred.user, { displayName: fullName });
+      setUser({ ...cred.user, displayName: fullName });
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   const signInWithGoogle = async () => {
     try {
-      // Use redirect by default in production/standalone contexts to avoid COOP/popup blocker issues
-      // In iframes (like the AI studio preview), we try popup first.
       const isIframe = window !== window.top;
       if (!isIframe) {
-         await signInWithRedirect(auth, googleProvider);
+        await signInWithRedirect(auth, googleProvider);
       } else {
-         await signInWithPopup(auth, googleProvider);
+        await signInWithPopup(auth, googleProvider);
       }
     } catch (error: any) {
-      console.error("Error signing in with Google:", error);
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        alert("The sign-in popup was closed before completion. Please try again.");
-      } else if (error.code === 'auth/popup-blocked') {
-        // Fallback to redirect if popup is blocked
-        await signInWithRedirect(auth, googleProvider);
+        // User closed or cancelled popup, handled gracefully without error
+        return;
+      }
+      
+      console.error("Error signing in with Google:", error);
+
+      if (error.code === 'auth/popup-blocked') {
+        try {
+          await signInWithRedirect(auth, googleProvider);
+        } catch (e) {
+          console.error("Redirect error:", e);
+        }
       } else if (error.code === 'auth/unauthorized-domain') {
         alert("Domain not authorized for Google Sign-In.\n\nFirebase can take up to 5-10 minutes to propagate domain additions. Please wait a moment and try again.\n\nHost: " + window.location.hostname);
       } else {
-        // As a last resort fallback, try redirect
-        await signInWithRedirect(auth, googleProvider);
+        try {
+          await signInWithRedirect(auth, googleProvider);
+        } catch (e) {
+          console.error("Redirect fallback error:", e);
+        }
       }
     }
   };
@@ -86,8 +150,25 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      isAuthModalOpen,
+      authModalMode,
+      openAuthModal, 
+      closeAuthModal, 
+      signInWithGoogle, 
+      signInWithEmail, 
+      signUpWithEmail, 
+      resetPassword, 
+      signOut 
+    }}>
       {children}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={closeAuthModal} 
+        initialMode={authModalMode} 
+      />
     </AuthContext.Provider>
   );
 };

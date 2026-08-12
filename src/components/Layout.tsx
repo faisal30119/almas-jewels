@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, User, LogOut, Instagram, Menu, X, Check, Search } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Instagram, Menu, X, Check, Search, LayoutGrid, Heart } from 'lucide-react';
 import { WhatsAppIcon } from './icons';
+import AlmasLogo from './AlmasLogo';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 import { cn } from '../lib/utils';
 import { db } from '../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 export default function Layout() {
   const { cartCount } = useCart();
-  const { user, signInWithGoogle, signOut } = useAuth();
+  const { user, openAuthModal, signOut } = useAuth();
+  const { wishlistIds } = useWishlist();
   const location = useLocation();
   const isHome = location.pathname === '/';
   
@@ -73,38 +76,62 @@ export default function Layout() {
           : "bg-emerald-950/95 backdrop-blur-md text-white shadow-md border-white/10"
       )}>
         {/* Left: Logo */}
-        <div className={cn("flex justify-start transition-all duration-300", isSearchOpen ? "hidden lg:flex lg:flex-1 pr-2" : "flex-1 pr-2")}>
-          <Link to="/" className="text-lg sm:text-xl lg:text-2xl font-serif font-bold tracking-widest uppercase whitespace-nowrap shrink-0">
-            Almas Jewels
+        <div className={cn("flex items-center justify-start transition-all duration-300", isSearchOpen ? "hidden lg:flex lg:flex-1 pr-2" : "flex-1 pr-2")}>
+          <Link to="/" className="shrink-0 hover:opacity-90 transition-opacity flex items-center">
+            <AlmasLogo variant="horizontal" />
           </Link>
         </div>
         
         {/* Center: Nav Links */}
-        <div className="hidden md:flex flex-[2] lg:flex-1 justify-center gap-4 lg:gap-10 text-xs lg:text-sm uppercase tracking-widest font-medium">
-          <Link to="/" className="hover:text-gold-400 transition-colors">Home</Link>
-          <Link to="/shop" className="hover:text-gold-400 transition-colors whitespace-nowrap">Shop Collection</Link>
-          <Link to="/track" className="hover:text-gold-400 transition-colors whitespace-nowrap">Track Order</Link>
+        <div className="hidden md:flex items-center justify-center gap-6 lg:gap-10 text-xs lg:text-sm uppercase tracking-widest font-medium flex-1">
+          <Link 
+            to="/" 
+            className={cn(
+              "relative py-1 transition-colors hover:text-gold-400",
+              location.pathname === '/' ? "text-gold-400 font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-gold-400" : "text-white/90"
+            )}
+          >
+            Home
+          </Link>
+          <Link 
+            to="/shop" 
+            className={cn(
+              "relative py-1 transition-colors hover:text-gold-400 whitespace-nowrap",
+              location.pathname.startsWith('/shop') || location.pathname.startsWith('/product') ? "text-gold-400 font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-gold-400" : "text-white/90"
+            )}
+          >
+            Shop Collection
+          </Link>
+          <Link 
+            to="/track" 
+            className={cn(
+              "relative py-1 transition-colors hover:text-gold-400 whitespace-nowrap",
+              location.pathname === '/track' ? "text-gold-400 font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-gold-400" : "text-white/90"
+            )}
+          >
+            Track Order
+          </Link>
         </div>
         
         {/* Right: Icons & Actions */}
-        <div className="flex flex-1 justify-end items-center gap-3 lg:gap-6">
-          <div className="relative flex items-center h-6">
+        <div className="flex flex-1 justify-end items-center gap-4 lg:gap-6">
+          <div className="relative flex items-center h-8">
             <AnimatePresence mode="wait">
               {isSearchOpen ? (
                 <motion.div
                   key="search-input"
                   initial={{ maxWidth: 0, opacity: 0 }}
-                  animate={{ maxWidth: 250, opacity: 1 }}
+                  animate={{ maxWidth: 220, opacity: 1 }}
                   exit={{ maxWidth: 0, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="relative w-[100px] sm:w-[140px] md:w-[200px] overflow-hidden flex items-center"
+                  className="relative w-[120px] sm:w-[160px] md:w-[200px] overflow-hidden flex items-center"
                 >
                   <input
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={handleSearchChange}
-                    className="w-full bg-transparent border-b border-white/30 focus:border-gold-400 text-sm text-white placeholder:text-white/50 px-1 py-1 pr-6 outline-none transition-colors"
+                    className="w-full bg-transparent border-b border-white/40 focus:border-gold-400 text-sm text-white placeholder:text-white/50 px-1 py-1 pr-6 outline-none transition-colors"
                     autoFocus
                   />
                   <button
@@ -119,7 +146,7 @@ export default function Layout() {
                         }
                       }
                     }}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors p-1"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -131,7 +158,7 @@ export default function Layout() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setIsSearchOpen(true)}
-                  className="hover:text-gold-400 transition-colors shrink-0"
+                  className="hidden md:flex items-center justify-center hover:text-gold-400 transition-colors shrink-0 p-1"
                   title="Search"
                 >
                   <Search className="w-5 h-5" />
@@ -140,30 +167,29 @@ export default function Layout() {
             </AnimatePresence>
           </div>
           {user ? (
-            <div className="flex items-center gap-3 md:gap-4">
+            <div className="hidden md:flex items-center gap-3 md:gap-4">
               {user.email === 'faisal301196@gmail.com' && (
-                <Link to="/admin" className="hidden md:block text-xs font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors uppercase">
+                <Link to="/admin" className="text-xs font-medium opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors uppercase tracking-wider py-1">
                   Admin
                 </Link>
               )}
-              <Link to="/profile" className="text-sm font-light opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors truncate max-w-[80px] sm:max-w-[100px]" title="My Profile">
+              <Link to="/profile" className="text-xs sm:text-sm font-medium opacity-90 hover:opacity-100 hover:text-gold-400 transition-colors truncate max-w-[90px] sm:max-w-[110px] py-1" title="My Profile">
                 {user.displayName?.split(' ')[0] || 'User'}
               </Link>
-              <button onClick={signOut} className="hidden md:block hover:text-gold-400 transition-colors" title="Sign Out">
+              <button onClick={signOut} className="hover:text-gold-400 transition-colors p-1 flex items-center justify-center" title="Sign Out">
                 <LogOut className="w-5 h-5" />
               </button>
             </div>
           ) : (
-            <button onClick={async () => {
-              try {
-                await signInWithGoogle();
-              } catch (e) {}
-            }} className="flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs sm:text-sm tracking-widest font-medium shrink-0" title="Sign In">
-              <span className="hidden sm:inline">Sign In</span>
-              <User className="w-5 h-5 sm:hidden" />
+            <button 
+              onClick={() => openAuthModal('login')} 
+              className="hidden md:flex items-center gap-2 hover:text-gold-400 transition-colors duration-300 uppercase text-xs sm:text-sm tracking-widest font-medium shrink-0 py-1" 
+              title="Sign In"
+            >
+              <span>Sign In</span>
             </button>
           )}
-          <Link to="/cart" className="relative hover:text-gold-400 transition-colors shrink-0">
+          <Link to="/cart" className="hidden md:flex items-center justify-center relative hover:text-gold-400 transition-colors shrink-0 p-1">
             <ShoppingBag className="w-5 h-5" />
             <AnimatePresence>
               {cartCount > 0 && (
@@ -171,7 +197,7 @@ export default function Layout() {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
-                  className="absolute -top-2 -right-2 bg-gold-500 text-emerald-950 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center"
+                  className="absolute -top-1.5 -right-1.5 bg-gold-500 text-emerald-950 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center"
                 >
                   {cartCount}
                 </motion.span>
@@ -227,10 +253,8 @@ export default function Layout() {
                 </>
               ) : (
                 <button 
-                  onClick={async () => {
-                    try {
-                      await signInWithGoogle();
-                    } catch (e) {}
+                  onClick={() => {
+                    openAuthModal('login');
                     setIsMobileMenuOpen(false);
                   }}
                   className="flex items-center gap-2 bg-gold-500 text-emerald-950 px-6 py-3 font-sans uppercase text-sm tracking-widest font-medium hover:bg-gold-400 transition-colors mt-4 justify-center"
@@ -253,7 +277,7 @@ export default function Layout() {
         )}
       </AnimatePresence>
 
-      <main className="flex-grow">
+      <main className="flex-grow pb-16 md:pb-0">
         <div className={cn(!isHome && "pt-[73px]")}>
           <Outlet />
         </div>
@@ -264,7 +288,9 @@ export default function Layout() {
           <div className="mb-20">
             <div className="flex flex-col justify-between">
               <div>
-                <h3 className="text-2xl font-serif font-bold tracking-widest uppercase mb-8">Almas Jewels</h3>
+                <Link to="/" className="inline-block mb-8 hover:opacity-90 transition-opacity">
+                  <AlmasLogo variant="full" />
+                </Link>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 text-sm text-white/60 font-light">
                   <ul className="space-y-4">
                     <li><Link to="/shop" className="hover:text-gold-400 transition-colors">Shop All</Link></li>
@@ -304,11 +330,11 @@ export default function Layout() {
         href="https://wa.me/919973819387" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-[9999] bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:scale-110 transition-transform duration-300 flex items-center justify-center group"
+        className="fixed bottom-[80px] right-4 md:bottom-8 md:right-8 z-30 bg-[#25D366] text-white p-3 md:p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:scale-110 transition-transform duration-300 flex items-center justify-center group"
         aria-label="Chat on WhatsApp"
       >
-        <WhatsAppIcon className="w-8 h-8" />
-        <span className="absolute right-full mr-4 bg-white text-gray-800 text-sm py-2 px-4 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+        <WhatsAppIcon className="w-6 h-6 md:w-8 md:h-8" />
+        <span className="hidden md:block absolute right-full mr-4 bg-white text-gray-800 text-sm py-2 px-4 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
           Need help? Chat with us
         </span>
       </a>
@@ -409,6 +435,94 @@ export default function Layout() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200 px-2 py-1.5 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="grid grid-cols-5 items-center text-center">
+          <Link 
+            to="/shop" 
+            className={cn(
+              "flex flex-col items-center justify-center py-1 transition-colors",
+              location.pathname === '/shop' ? "text-[#D4A359] font-medium" : "text-neutral-600 hover:text-neutral-900"
+            )}
+          >
+            <LayoutGrid className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Shop</span>
+          </Link>
+
+          <button 
+            onClick={() => {
+              if (user) {
+                navigate('/profile');
+              } else {
+                openAuthModal('login');
+              }
+            }}
+            className={cn(
+              "relative flex flex-col items-center justify-center py-1 transition-colors",
+              location.pathname === '/profile' && user ? "text-[#D4A359] font-medium" : "text-neutral-600 hover:text-neutral-900"
+            )}
+          >
+            <div className="relative">
+              <Heart className="w-5 h-5 mb-0.5" />
+              {wishlistIds.length > 0 && (
+                <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {wishlistIds.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] tracking-tight">Wishlist</span>
+          </button>
+
+          <Link 
+            to="/cart" 
+            className={cn(
+              "relative flex flex-col items-center justify-center py-1 transition-colors",
+              location.pathname === '/cart' ? "text-[#D4A359] font-medium" : "text-neutral-600 hover:text-neutral-900"
+            )}
+          >
+            <div className="relative">
+              <ShoppingBag className="w-5 h-5 mb-0.5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-2 bg-[#D4A359] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] tracking-tight">Cart</span>
+          </Link>
+
+          <button 
+            onClick={() => {
+              if (user) {
+                navigate('/profile');
+              } else {
+                openAuthModal('login');
+              }
+            }}
+            className={cn(
+              "flex flex-col items-center justify-center py-1 transition-colors",
+              location.pathname === '/profile' ? "text-[#D4A359] font-medium" : "text-neutral-600 hover:text-neutral-900"
+            )}
+          >
+            <User className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">
+              {user ? (user.displayName?.split(' ')[0] || 'Account') : 'Account'}
+            </span>
+          </button>
+
+          <button 
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              setIsSearchOpen(true);
+            }}
+            className="flex flex-col items-center justify-center py-1 transition-colors text-neutral-600 hover:text-neutral-900"
+          >
+            <Search className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Search</span>
+          </button>
+        </div>
+      </div>
     </>
   );
 }

@@ -3,23 +3,23 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Plus, Minus, ArrowLeft, Check, Instagram, Link2, Loader2, Heart } from 'lucide-react';
 import { WhatsAppIcon } from '../components/icons';
-import royalCollectionImg from '../assets/images/collection_royal_1783594977165.jpg';
-import solitaireCollectionImg from '../assets/images/collection_solitaire_1783594992085.jpg';
-import occasionCollectionImg from '../assets/images/collection_occasion_1783595002665.jpg';
-import pendantMainImg from '../assets/images/pendant_butterfly_main_1786265928025.jpg';
-import pendantSub1Img from '../assets/images/pendant_butterfly_sub1_1786265950218.jpg';
-import pendantSub2Img from '../assets/images/pendant_butterfly_sub2_1786265975946.jpg';
-import pendantSub3Img from '../assets/images/pendant_butterfly_sub3_1786265998640.jpg';
+const royalCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277886/almas_bridal/assets/dpjqxedlu5oleauyj40l.jpg';
+const solitaireCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277888/almas_bridal/assets/uoge8dcesrge8bsgimj6.jpg';
+const occasionCollectionImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277883/almas_bridal/assets/brxuufifingum5xyjodn.jpg';
+const pendantMainImg = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277893/almas_bridal/assets/panbrhgotshii2pl5zkb.jpg';
+const pendantSub1Img = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277895/almas_bridal/assets/blteocmlx1mlsl7qtzx0.jpg';
+const pendantSub2Img = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277897/almas_bridal/assets/uffidivwpwv2wicg7m71.jpg';
+const pendantSub3Img = 'https://res.cloudinary.com/niagn9pn/image/upload/v1786277900/almas_bridal/assets/e5g5yagqr1ksbakallnl.jpg';
 
 
 const imageMap: Record<string, string> = {
-  '/assets/images/collection_royal_1783594977165.jpg': royalCollectionImg,
-  '/assets/images/collection_solitaire_1783594992085.jpg': solitaireCollectionImg,
-  '/assets/images/collection_occasion_1783595002665.jpg': occasionCollectionImg,
-  '/assets/images/pendant_butterfly_main_1786265928025.jpg': pendantMainImg,
-  '/assets/images/pendant_butterfly_sub1_1786265950218.jpg': pendantSub1Img,
-  '/assets/images/pendant_butterfly_sub2_1786265975946.jpg': pendantSub2Img,
-  '/assets/images/pendant_butterfly_sub3_1786265998640.jpg': pendantSub3Img,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277886/almas_bridal/assets/dpjqxedlu5oleauyj40l.jpg': royalCollectionImg,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277888/almas_bridal/assets/uoge8dcesrge8bsgimj6.jpg': solitaireCollectionImg,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277883/almas_bridal/assets/brxuufifingum5xyjodn.jpg': occasionCollectionImg,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277893/almas_bridal/assets/panbrhgotshii2pl5zkb.jpg': pendantMainImg,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277895/almas_bridal/assets/blteocmlx1mlsl7qtzx0.jpg': pendantSub1Img,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277897/almas_bridal/assets/uffidivwpwv2wicg7m71.jpg': pendantSub2Img,
+  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277900/almas_bridal/assets/e5g5yagqr1ksbakallnl.jpg': pendantSub3Img,
 
 };
 
@@ -53,6 +53,23 @@ export default function ProductDetail() {
   const [isCopied, setIsCopied] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [isHovering, setIsHovering] = useState(false);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+
+  const getDescriptionBullets = (desc: string) => {
+    if (!desc) return [];
+    if (desc.includes('\n')) {
+      return desc.split('\n').map(s => s.trim()).filter(Boolean);
+    }
+    const colonSplit = desc.split(/(?=[A-Z][a-zA-Z0-9\s\-]{2,35}:)/).map(s => s.trim()).filter(Boolean);
+    if (colonSplit.length > 1) {
+      return colonSplit;
+    }
+    const sentences = desc.split(/(?<=\.)\s+/).map(s => s.trim()).filter(Boolean);
+    if (sentences.length > 1) {
+      return sentences;
+    }
+    return [desc];
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -178,11 +195,11 @@ export default function ProductDetail() {
           <div className="grid grid-cols-5 gap-2">
             {(product.name.includes("Rubans Pendant") 
               ? [
-                  '/assets/images/61iXLd1O+OL._SY695_.jpg', 
-                  '/assets/images/61cPASED62L._SY695_.jpg', 
-                  '/assets/images/61vDXnCmbpL._SY695_.jpg', 
-                  '/assets/images/71V52eCgCNL._SY695_.jpg', 
-                  '/assets/images/51yFEaupQUL._SY695_.jpg'
+                  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277879/almas_bridal/assets/dwicfvexas9ouzwhu56z.jpg', 
+                  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277878/almas_bridal/assets/je12xqrwjpdebpjmz6nx.jpg', 
+                  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277880/almas_bridal/assets/p6ubeaiczadlglie4blr.jpg', 
+                  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277881/almas_bridal/assets/bbzpw89ilrymnvsx399q.jpg', 
+                  'https://res.cloudinary.com/niagn9pn/image/upload/v1786277877/almas_bridal/assets/daitayklpsxz51ig2kma.jpg'
                 ]
               : [product.image, product.image, product.image, product.image, product.image]
             ).map((img, i) => (
@@ -204,9 +221,49 @@ export default function ProductDetail() {
             <h1 className="text-4xl md:text-5xl font-serif text-emerald-950 mb-6 leading-tight">{product.name}</h1>
             <p className="text-2xl text-emerald-900 mb-8">₹{product.price.toLocaleString('en-IN')}</p>
             
-            <p className="text-gray-600 font-light leading-relaxed mb-10">
-              {product.description}
-            </p>
+            {(() => {
+              const bullets = getDescriptionBullets(product.description);
+              const hasMore = bullets.length > 2;
+              const visibleBullets = isDescExpanded ? bullets : bullets.slice(0, 2);
+
+              return (
+                <div className="mb-10 font-sans">
+                  <ul className="space-y-2.5 text-gray-600 font-light text-sm leading-relaxed list-disc pl-5">
+                    {visibleBullets.map((bullet, idx) => {
+                      const colonIndex = bullet.indexOf(':');
+                      let title = '';
+                      let body = bullet;
+                      if (colonIndex > 0 && colonIndex <= 45) {
+                        title = bullet.slice(0, colonIndex + 1);
+                        body = bullet.slice(colonIndex + 1);
+                      }
+                      return (
+                        <li key={idx} className="marker:text-gold-500">
+                          {title && <strong className="font-medium text-emerald-950 mr-1">{title}</strong>}
+                          <span>{body}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  {hasMore && (
+                    <button
+                      type="button"
+                      onClick={() => setIsDescExpanded(!isDescExpanded)}
+                      className="mt-3 text-xs uppercase tracking-widest font-medium text-gold-600 hover:text-gold-700 transition-colors inline-flex items-center gap-1 py-1"
+                    >
+                      <span>{isDescExpanded ? 'See Less' : 'See More'}</span>
+                      <ChevronDown
+                        className={cn(
+                          "w-4 h-4 transition-transform duration-300",
+                          isDescExpanded ? "rotate-180" : "rotate-0"
+                        )}
+                      />
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Attributes */}
             <div className="grid grid-cols-2 gap-6 mb-10 border-y border-emerald-950/10 py-6">

@@ -11,7 +11,7 @@ import { products as hardcodedProducts, Product } from '../data';
 import { cn } from '../lib/utils';
 
 export default function Profile() {
-  const { user, signInWithGoogle, signOut } = useAuth();
+  const { user, openAuthModal, signOut } = useAuth();
   const { wishlistIds, toggleWishlist } = useWishlist();
   
   const [orders, setOrders] = useState<any[]>([]);
@@ -151,17 +151,13 @@ export default function Profile() {
         <div className="bg-white p-8 border border-emerald-900/10 shadow-sm rounded-sm">
           <h2 className="text-2xl font-serif text-emerald-950 mb-3">Sign In Required</h2>
           <p className="text-gray-600 font-light text-sm mb-6 leading-relaxed">
-            Please sign in with your Google account to view your profile, order history, and saved wishlist.
+            Please log in or create an account to view your profile, order history, and saved wishlist.
           </p>
           <button
-            onClick={async () => {
-              try {
-                await signInWithGoogle();
-              } catch (e) {}
-            }}
-            className="w-full flex items-center justify-center gap-3 bg-emerald-950 text-gold-400 py-3 px-6 uppercase tracking-widest text-xs font-medium hover:bg-emerald-900 transition-colors shadow-sm"
+            onClick={() => openAuthModal('login')}
+            className="w-full flex items-center justify-center gap-3 bg-[#D4A359] hover:bg-[#C29247] text-white py-3 px-6 uppercase tracking-widest text-xs font-medium transition-colors shadow-sm"
           >
-            Sign In with Google
+            Log In / Sign Up
           </button>
         </div>
       </div>
