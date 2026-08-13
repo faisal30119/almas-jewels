@@ -1,12 +1,12 @@
 # Almas Jewels — Technical Stack, Architecture & Luxury Design System
 
-This document provides a comprehensive breakdown of the technology stack, application architecture, luxury design language, and key modules powering **Almas Jewels (الماس)**.
+This document provides a comprehensive breakdown of the technology stack, application architecture, luxury design language, and key modules powering **Almas Bridal (الماس)**.
 
 ---
 
 ## 1. Executive Summary
 
-**Almas Jewels** is an ultra-premium, high-end jewelry e-commerce platform and bespoke atelier consultation system. Designed for royal and luxury jewelry collections, the application emphasizes refined aesthetics, tactile motion, seamless checkout, real-time inventory management, order tracking, and bespoke appointments.
+**Almas Bridal** is an ultra-premium, high-end bridal couture e-commerce platform and bespoke atelier consultation system. Designed for royal and luxury bridal wear, the application emphasizes refined aesthetics, tactile motion, seamless checkout, real-time inventory management, order tracking, and bespoke appointments.
 
 ---
 
@@ -48,7 +48,7 @@ This document provides a comprehensive breakdown of the technology stack, applic
 
 ## 3. Luxury Design System & Aesthetic Language
 
-The visual design system of Almas Jewels is constructed around the principles of **Haute Couture Elegance, Spatial Generosity, and Editorial Minimalism**.
+The visual design system of Almas Bridal is constructed around the principles of **Haute Couture Elegance, Spatial Generosity, and Editorial Minimalism**.
 
 ### 3.1 Color Palette & Visual Tones
 

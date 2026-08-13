@@ -291,7 +291,7 @@ export default function Profile() {
                     <div>
                       <p className="font-semibold">Reset Link Sent Successfully!</p>
                       <p className="text-xs text-emerald-800 mt-0.5">
-                        Please check your inbox (and spam folder) for an email from Almas Bridal with your password reset link.
+                        Please check your inbox (and spam folder) for an email from Almas Jewels with your password reset link.
                       </p>
                     </div>
                   </div>
