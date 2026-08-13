@@ -1,5 +1,19 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from 'firebase/auth';
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  signOut, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail, 
+  verifyPasswordResetCode,
+  confirmPasswordReset,
+  updateProfile 
+} from 'firebase/auth';
 import { initializeFirestore } from 'firebase/firestore';
 
 // We prioritize the generated config, and only use env variables if they look valid.
@@ -26,4 +40,17 @@ export const db = initializeFirestore(app, {
 }, "ai-studio-almasbridal-56acefbb-6df3-451a-a59f-324bc890894b");
 
 export const googleProvider = new GoogleAuthProvider();
-export { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile };
+export { 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  signOut, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail, 
+  verifyPasswordResetCode,
+  confirmPasswordReset,
+  updateProfile 
+};
+

@@ -11,6 +11,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
+  verifyPasswordResetCode,
+  confirmPasswordReset,
   updateProfile
 } from '../lib/firebase';
 import AuthModal from '../components/AuthModal';
@@ -26,6 +28,8 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  verifyResetCode: (code: string) => Promise<string>;
+  confirmPasswordResetWithCode: (code: string, newPassword: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -40,6 +44,8 @@ const AuthContext = createContext<AuthContextType>({
   signInWithEmail: async () => {},
   signUpWithEmail: async () => {},
   resetPassword: async () => {},
+  verifyResetCode: async () => '',
+  confirmPasswordResetWithCode: async () => {},
   signOut: async () => {}
 });
 
@@ -104,7 +110,16 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   };
 
   const resetPassword = async (email: string) => {
+    // sendPasswordResetEmail sends reset link
     await sendPasswordResetEmail(auth, email);
+  };
+
+  const verifyResetCode = async (code: string) => {
+    return await verifyPasswordResetCode(auth, code);
+  };
+
+  const confirmPasswordResetWithCode = async (code: string, newPassword: string) => {
+    await confirmPasswordReset(auth, code, newPassword);
   };
 
   const signInWithGoogle = async () => {
@@ -161,6 +176,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       signInWithEmail, 
       signUpWithEmail, 
       resetPassword, 
+      verifyResetCode,
+      confirmPasswordResetWithCode,
       signOut 
     }}>
       {children}

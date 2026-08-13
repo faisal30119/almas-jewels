@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Package, Calendar, LogOut, Heart, Trash2, Loader2 } from 'lucide-react';
+import { Package, Calendar, LogOut, Heart, Trash2, Loader2, KeyRound, CheckCircle2, AlertCircle, Mail, User as UserIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +11,7 @@ import { products as hardcodedProducts, Product } from '../data';
 import { cn } from '../lib/utils';
 
 export default function Profile() {
-  const { user, openAuthModal, signOut } = useAuth();
+  const { user, openAuthModal, signOut, resetPassword } = useAuth();
   const { wishlistIds, toggleWishlist } = useWishlist();
   
   const [orders, setOrders] = useState<any[]>([]);
@@ -22,6 +22,32 @@ export default function Profile() {
   const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+
+  // Password reset from profile
+  const [resetEmailSending, setResetEmailSending] = useState(false);
+  const [resetEmailSentSuccess, setResetEmailSentSuccess] = useState(false);
+  const [resetEmailError, setResetEmailError] = useState<string | null>(null);
+
+  const handleProfilePasswordReset = async () => {
+    if (!user?.email) return;
+    setResetEmailSending(true);
+    setResetEmailError(null);
+    setResetEmailSentSuccess(false);
+
+    try {
+      await resetPassword(user.email);
+      setResetEmailSentSuccess(true);
+    } catch (err: any) {
+      console.error("Profile password reset error:", err);
+      if (err.code === 'auth/too-many-requests') {
+        setResetEmailError("Too many requests. Please wait a few minutes before trying again.");
+      } else {
+        setResetEmailError(err.message || "Failed to send reset link.");
+      }
+    } finally {
+      setResetEmailSending(false);
+    }
+  };
 
   const confirmCancel = async () => {
     if (!cancelOrderId) return;
@@ -74,7 +100,7 @@ export default function Profile() {
     setCancelOrderId(orderId);
   };
   
-  const [activeTab, setActiveTab] = useState<'orders' | 'wishlist'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'wishlist' | 'settings'>('orders');
 
   useEffect(() => {
     if (!user) return;
@@ -211,9 +237,87 @@ export default function Profile() {
             <motion.div layoutId="profileTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-950" />
           )}
         </button>
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={cn(
+            "pb-4 text-sm font-medium uppercase tracking-widest transition-colors relative",
+            activeTab === 'settings' ? "text-emerald-950" : "text-gray-400 hover:text-emerald-950"
+          )}
+        >
+          <span className="flex items-center gap-2">
+            <KeyRound className="w-4 h-4" /> 
+            Account & Security
+          </span>
+          {activeTab === 'settings' && (
+            <motion.div layoutId="profileTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-950" />
+          )}
+        </button>
       </div>
 
       <div className="bg-white p-8 border border-gray-100 shadow-sm">
+        {activeTab === 'settings' && (
+          <div className="max-w-2xl space-y-8 font-sans">
+            <div>
+              <h3 className="text-xl font-serif text-emerald-950 mb-4 pb-2 border-b border-gray-100">
+                Account Information
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div className="bg-neutral-50 p-4 border border-neutral-100">
+                  <span className="text-xs uppercase tracking-wider text-neutral-500 block mb-1">Full Name</span>
+                  <p className="font-medium text-neutral-900">{user.displayName || 'Not Provided'}</p>
+                </div>
+                <div className="bg-neutral-50 p-4 border border-neutral-100">
+                  <span className="text-xs uppercase tracking-wider text-neutral-500 block mb-1">Email Address</span>
+                  <p className="font-medium text-neutral-900 truncate">{user.email}</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-serif text-emerald-950 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-[#C79853]" />
+                Password & Security
+              </h3>
+
+              <div className="bg-neutral-50 p-6 border border-neutral-200">
+                <h4 className="font-serif text-lg text-emerald-950 mb-2">Reset Account Password</h4>
+                <p className="text-sm text-neutral-600 mb-6 leading-relaxed">
+                  Want to change or reset your password? We will send a secure password reset link directly to your verified email address (<strong className="text-neutral-900">{user.email}</strong>).
+                </p>
+
+                {resetEmailSentSuccess && (
+                  <div className="mb-5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">Reset Link Sent Successfully!</p>
+                      <p className="text-xs text-emerald-800 mt-0.5">
+                        Please check your inbox (and spam folder) for an email from Almas Bridal with your password reset link.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {resetEmailError && (
+                  <div className="mb-5 p-4 bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                    <span>{resetEmailError}</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  disabled={resetEmailSending}
+                  onClick={handleProfilePasswordReset}
+                  className="py-3 px-6 bg-[#C79853] hover:bg-[#b88944] active:bg-[#a87a38] text-white font-medium text-sm uppercase tracking-widest transition-colors flex items-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {resetEmailSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                  {resetEmailSending ? 'Sending Reset Link...' : 'Send Password Reset Email'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'orders' && (
           <>
             {loadingOrders ? (

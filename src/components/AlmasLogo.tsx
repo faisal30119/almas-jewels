@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface AlmasLogoProps {
   className?: string;
@@ -7,8 +7,8 @@ interface AlmasLogoProps {
 }
 
 export default function AlmasLogo({ className = '', variant = 'full', light = true }: AlmasLogoProps) {
-  const goldGradientId = React.useId();
-  const silverGradientId = React.useId();
+  const goldGradientId = useId();
+  const silverGradientId = useId();
 
   const GoldEmblem = (
     <svg

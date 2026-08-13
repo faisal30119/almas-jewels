@@ -76,14 +76,14 @@ export default function Layout() {
           : "bg-emerald-950/95 backdrop-blur-md text-white shadow-md border-white/10"
       )}>
         {/* Left: Logo */}
-        <div className={cn("flex items-center justify-start transition-all duration-300", isSearchOpen ? "hidden lg:flex lg:flex-1 pr-2" : "flex-1 pr-2")}>
+        <div className={cn("flex items-center justify-start transition-all duration-300 z-10", isSearchOpen ? "hidden lg:flex lg:flex-1 pr-2" : "flex-1 pr-2")}>
           <Link to="/" className="shrink-0 hover:opacity-90 transition-opacity flex items-center">
             <AlmasLogo variant="horizontal" />
           </Link>
         </div>
         
         {/* Center: Nav Links */}
-        <div className="hidden md:flex items-center justify-center gap-6 lg:gap-10 text-xs lg:text-sm uppercase tracking-widest font-medium flex-1">
+        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-6 lg:gap-10 text-xs lg:text-sm uppercase tracking-widest font-medium z-10">
           <Link 
             to="/" 
             className={cn(
@@ -114,7 +114,7 @@ export default function Layout() {
         </div>
         
         {/* Right: Icons & Actions */}
-        <div className="flex flex-1 justify-end items-center gap-4 lg:gap-6">
+        <div className="flex flex-1 justify-end items-center gap-4 lg:gap-6 z-10">
           <div className="relative flex items-center h-8">
             <AnimatePresence mode="wait">
               {isSearchOpen ? (
@@ -158,7 +158,7 @@ export default function Layout() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setIsSearchOpen(true)}
-                  className="hidden md:flex items-center justify-center hover:text-gold-400 transition-colors shrink-0 p-1"
+                  className="flex items-center justify-center hover:text-gold-400 transition-colors shrink-0 p-1"
                   title="Search"
                 >
                   <Search className="w-5 h-5" />
@@ -189,7 +189,7 @@ export default function Layout() {
               <span>Sign In</span>
             </button>
           )}
-          <Link to="/cart" className="hidden md:flex items-center justify-center relative hover:text-gold-400 transition-colors shrink-0 p-1">
+          <Link to="/cart" className="flex items-center justify-center relative hover:text-gold-400 transition-colors shrink-0 p-1">
             <ShoppingBag className="w-5 h-5" />
             <AnimatePresence>
               {cartCount > 0 && (
@@ -208,7 +208,7 @@ export default function Layout() {
           {/* Mobile Menu Button */}
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden text-white hover:text-gold-400 transition-colors focus:outline-none shrink-0"
+            className="md:hidden flex items-center justify-center p-1 text-white hover:text-gold-400 transition-colors focus:outline-none shrink-0"
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -219,61 +219,124 @@ export default function Layout() {
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-[73px] bottom-0 bg-emerald-950/98 backdrop-blur-md z-40 flex flex-col px-8 py-12 md:hidden"
-          >
-            <div className="flex flex-col gap-8 text-lg uppercase tracking-widest font-serif font-medium text-white/90">
-              <Link to="/" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5">Home</Link>
-              <Link to="/shop" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5">Shop Collection</Link>
-              <Link to="/track" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5">Track Order</Link>
-              
-              {user ? (
-                <>
-                  <Link to="/profile" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5">
-                    My Profile ({user.displayName?.split(' ')[0]})
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
+              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-[360px] bg-emerald-950/98 backdrop-blur-md border-l border-white/10 z-50 flex flex-col overflow-y-auto md:hidden"
+            >
+              <div className="p-4 flex items-center">
+                <button onClick={() => setIsMobileMenuOpen(false)} className="text-white/80 hover:text-gold-400 p-2 hover:bg-white/10 rounded-full transition-colors">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+                            <div className="flex flex-col px-4 pb-4">
+                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Home</span>
+                </Link>
+                <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Shop Collection</span>
+                </Link>
+                <Link to="/track" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Track Order</span>
+                </Link>
+                <Link to="/shop?sort=new" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1599643478524-fb66f4568e62?w=100&q=80" alt="New Arrivals" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">New Arrivals</span>
+                  <span className="ml-auto bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">New</span>
+                </Link>
+                <Link to="/shop?sort=popular" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=100&q=80" alt="Best Seller" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Best Seller</span>
+                </Link>
+                <Link to="/shop?category=Necklace Set" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100&q=80" alt="Necklace Set" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Necklace Set</span>
+                </Link>
+                <Link to="/shop?category=Mangalsutra" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=100&q=80" alt="Mangalsutra" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Mangalsutra</span>
+                </Link>
+                <Link to="/shop?category=Rings" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1605100804763-247f67b2548e?w=100&q=80" alt="Rings" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Rings</span>
+                </Link>
+                <Link to="/shop?category=Necklaces" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1599643477874-5c866d595cf6?w=100&q=80" alt="Necklace" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Necklace</span>
+                </Link>
+                <Link to="/shop?category=Earrings" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?w=100&q=80" alt="Earrings" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Earrings</span>
+                  <span className="ml-auto bg-[#D4A359] text-white text-[10px] px-2 py-0.5 rounded-full font-medium">Pro</span>
+                </Link>
+                <Link to="/shop?category=Bracelets" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=100&q=80" alt="Bracelets" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Bracelets</span>
+                </Link>
+                <Link to="/shop?category=Gifting" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
+                  <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=100&q=80" alt="Gifting" className="w-12 h-12 rounded-full object-cover" />
+                  <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Gifting</span>
+                </Link>
+              </div>
+
+              <div className="px-4 pb-8">
+                <div className="flex gap-4 mb-4">
+                  <Link 
+                    to={user ? "/profile" : "/"} 
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      if(!user) openAuthModal('login');
+                    }}
+                    className="flex-1 bg-[#D4A359] hover:bg-[#c19248] text-white py-3 px-4 flex items-center justify-center gap-2 transition-colors text-sm font-medium"
+                  >
+                    <Heart className="w-4 h-4" /> Wishlist
                   </Link>
-                  {user.email === 'faisal301196@gmail.com' && (
-                    <Link to="/admin" className="hover:text-gold-400 transition-colors py-2 border-b border-white/5 text-gold-400">
-                      Admin Dashboard
-                    </Link>
-                  )}
                   <button 
                     onClick={() => {
-                      signOut();
                       setIsMobileMenuOpen(false);
+                      setIsSearchOpen(true);
                     }}
-                    className="flex items-center gap-2 hover:text-gold-400 transition-colors py-2 text-left text-sm uppercase tracking-widest font-sans font-normal opacity-80 mt-4"
+                    className="flex-1 bg-[#D4A359] hover:bg-[#c19248] text-white py-3 px-4 flex items-center justify-center gap-2 transition-colors text-sm font-medium"
                   >
-                    <LogOut className="w-4 h-4" /> Sign Out
+                    <Search className="w-4 h-4" /> Search
                   </button>
-                </>
-              ) : (
-                <button 
-                  onClick={() => {
-                    openAuthModal('login');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 bg-gold-500 text-emerald-950 px-6 py-3 font-sans uppercase text-sm tracking-widest font-medium hover:bg-gold-400 transition-colors mt-4 justify-center"
-                >
-                  <User className="w-4 h-4" /> Sign In
-                </button>
-              )}
-            </div>
-            
-            <div className="mt-auto pt-8 border-t border-white/5 flex flex-col gap-4 text-xs text-white/40 font-light">
-              <div className="flex gap-4 justify-center">
-                <a href="https://instagram.com/almasladiescorner" target="_blank" rel="noopener noreferrer" className="hover:text-gold-400 transition-colors flex items-center gap-2">
-                  <Instagram className="w-4 h-4" />
-                  <span>@almasladiescorner</span>
-                </a>
+                </div>
+
+                {!user ? (
+                  <button 
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      openAuthModal('login');
+                    }}
+                    className="w-[calc(50%-0.5rem)] bg-[#D4A359] hover:bg-[#c19248] text-white py-3 px-4 flex items-center justify-center gap-2 transition-colors text-sm font-medium"
+                  >
+                    <User className="w-4 h-4" /> Login
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      signOut();
+                    }}
+                    className="w-[calc(50%-0.5rem)] bg-[#D4A359] hover:bg-[#c19248] text-white py-3 px-4 flex items-center justify-center gap-2 transition-colors text-sm font-medium"
+                  >
+                    <LogOut className="w-4 h-4" /> Logout
+                  </button>
+                )}
               </div>
-              <p className="text-center">&copy; {new Date().getFullYear()} Almas Jewels.</p>
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
