@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -13,20 +13,7 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Also checking environment variable ADMIN_EMAILS locally if exposed, 
-  // but for safety, we are hardcoding the check for the frontend here.
-  // The real security happens on the backend.
-  const adminEmails = import.meta.env.VITE_ADMIN_EMAILS 
-    ? import.meta.env.VITE_ADMIN_EMAILS.split(',').map((e: string) => e.trim()) 
-    : ['faisal301196@gmail.com', 'almasladiescornersakchi@gmail.com'];
-  
-  // To assist with preview
-  if (user && user.email) {
-     console.log("Logged in as:", user.email);
-     console.log("Admin emails list:", adminEmails);
-  }
-    
-  if (!user || !user.email || !adminEmails.includes(user.email)) {
+  if (!user || !isAdmin) {
     return <Navigate to="/" replace />;
   }
 

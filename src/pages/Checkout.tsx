@@ -32,10 +32,10 @@ const imageMap: Record<string, string> = {
 
 };
 
-import { products as hardcodedProducts, Product } from '../data';
+import { Product } from '../data';
 import { db, auth } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
-
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { fetchAllProducts } from '../lib/productsService';
 
 export default function Checkout() {
   const { items, cartCount, clearCart, removeFromCart, updateQuantity } = useCart();
@@ -74,44 +74,23 @@ export default function Checkout() {
   }, [user]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      let pgProducts: Product[] = [];
-      let fbProducts: Product[] = [];
-      
+    let isMounted = true;
+    const loadProducts = async () => {
       try {
-        const res = await fetch('/api/products');
-        if (res.ok) {
-          const data = await res.json();
-          pgProducts = (Array.isArray(data) ? data : []).map((item: any) => ({
-            ...item,
-            id: String(item.id),
-            stoneColor: item.stone_color || item.stoneColor,
-            image: imageMap[item.image] || item.image
-          }));
+        const prods = await fetchAllProducts();
+        if (isMounted) {
+          setDbProducts(prods);
         }
-      } catch (err) {
-        console.error("Failed to fetch products from API:", err);
+      } finally {
+        if (isMounted) {
+          setProductsLoading(false);
+        }
       }
-      
-      try {
-        
-        const querySnapshot = await Promise.race([
-          getDocs(collection(db, 'products')),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
-        ]) as any;
-
-        fbProducts = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Product[];
-      } catch (fbErr) {
-        console.error("Failed to fetch from Firebase:", fbErr);
-      }
-      
-      setDbProducts([...hardcodedProducts, ...pgProducts, ...fbProducts]);
-      setProductsLoading(false);
     };
-    fetchProducts();
+    loadProducts();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Hydrate cart items with product data

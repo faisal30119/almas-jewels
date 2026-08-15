@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { 
   auth, 
+  db,
   onAuthStateChanged, 
   signInWithPopup, 
   signInWithRedirect, 
@@ -15,11 +16,28 @@ import {
   confirmPasswordReset,
   updateProfile
 } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import AuthModal from '../components/AuthModal';
+
+export const DEFAULT_ADMIN_EMAILS = [
+  'faisal301196@gmail.com',
+  'almasladiescornersakchi@gmail.com'
+];
+
+export const checkIsAdminEmail = (email?: string | null): boolean => {
+  if (!email) return false;
+  const normalized = email.toLowerCase().trim();
+  const envAdmins = (import.meta as any).env?.VITE_ADMIN_EMAILS
+    ? String((import.meta as any).env.VITE_ADMIN_EMAILS).split(',').map((e: string) => e.trim().toLowerCase())
+    : [];
+  const allAdmins = [...DEFAULT_ADMIN_EMAILS.map(e => e.toLowerCase()), ...envAdmins];
+  return allAdmins.includes(normalized);
+};
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAdmin: boolean;
   isAuthModalOpen: boolean;
   authModalMode: 'login' | 'register' | 'forgot';
   openAuthModal: (mode?: 'login' | 'register' | 'forgot') => void;
@@ -36,6 +54,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  isAdmin: false,
   isAuthModalOpen: false,
   authModalMode: 'login',
   openAuthModal: () => {},
@@ -77,16 +96,32 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       setUser(currentUser);
       
       if (currentUser) {
+        // 1. Direct Firestore profile sync (client-side)
+        try {
+          await setDoc(doc(db, 'users', currentUser.uid), {
+            uid: currentUser.uid,
+            email: currentUser.email || '',
+            displayName: currentUser.displayName || '',
+            lastLogin: new Date().toISOString()
+          }, { merge: true });
+        } catch {
+          // Non-blocking Firestore sync
+        }
+
+        // 2. Server-side sync endpoint (with safe error handling)
         try {
           const token = await currentUser.getIdToken();
           await fetch('/api/users/sync', {
             method: 'POST',
             headers: {
+              'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             }
+          }).catch(() => {
+            // Ignore offline/transient network errors
           });
-        } catch (error) {
-          console.error("Failed to sync user:", error);
+        } catch {
+          // Ignore transient fetch failure
         }
       }
       
@@ -124,15 +159,15 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
   const signInWithGoogle = async () => {
     try {
-      const isIframe = window !== window.top;
-      if (!isIframe) {
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result?.user) {
+        setUser(result.user);
+        setIsAuthModalOpen(false);
+        return result.user;
       }
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        // User closed or cancelled popup, handled gracefully without error
+        // User closed or cancelled popup, harmless
         return;
       }
       
@@ -141,18 +176,13 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       if (error.code === 'auth/popup-blocked') {
         try {
           await signInWithRedirect(auth, googleProvider);
+          return;
         } catch (e) {
           console.error("Redirect error:", e);
         }
-      } else if (error.code === 'auth/unauthorized-domain') {
-        alert("Domain not authorized for Google Sign-In.\n\nFirebase can take up to 5-10 minutes to propagate domain additions. Please wait a moment and try again.\n\nHost: " + window.location.hostname);
-      } else {
-        try {
-          await signInWithRedirect(auth, googleProvider);
-        } catch (e) {
-          console.error("Redirect fallback error:", e);
-        }
       }
+      
+      throw error;
     }
   };
 
@@ -164,10 +194,13 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     }
   };
 
+  const isAdmin = checkIsAdminEmail(user?.email);
+
   return (
     <AuthContext.Provider value={{ 
       user, 
       loading, 
+      isAdmin,
       isAuthModalOpen,
       authModalMode,
       openAuthModal, 

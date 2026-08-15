@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, User, LogOut, Instagram, Menu, X, Check, Search, LayoutGrid, Heart } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Instagram, Menu, X, Check, Search, LayoutGrid, Heart, ShieldCheck } from 'lucide-react';
 import { WhatsAppIcon } from './icons';
 import AlmasLogo from './AlmasLogo';
 import { useCart } from '../context/CartContext';
@@ -13,7 +13,7 @@ import { collection, addDoc } from 'firebase/firestore';
 
 export default function Layout() {
   const { cartCount } = useCart();
-  const { user, openAuthModal, signOut } = useAuth();
+  const { user, openAuthModal, signOut, isAdmin } = useAuth();
   const { wishlistIds } = useWishlist();
   const location = useLocation();
   const isHome = location.pathname === '/';
@@ -83,7 +83,7 @@ export default function Layout() {
         </div>
         
         {/* Center: Nav Links */}
-        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-6 lg:gap-10 text-xs lg:text-sm uppercase tracking-widest font-medium z-10">
+        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-6 lg:gap-8 text-xs lg:text-sm uppercase tracking-widest font-medium z-10">
           <Link 
             to="/" 
             className={cn(
@@ -111,10 +111,23 @@ export default function Layout() {
           >
             Track Order
           </Link>
+          {isAdmin && (
+            <Link 
+              to="/admin" 
+              className={cn(
+                "relative py-1 transition-colors hover:text-gold-400 whitespace-nowrap",
+                location.pathname.startsWith('/admin') 
+                  ? "text-gold-400 font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-gold-400" 
+                  : "text-white/90"
+              )}
+            >
+              Admin
+            </Link>
+          )}
         </div>
         
         {/* Right: Icons & Actions */}
-        <div className="flex flex-1 justify-end items-center gap-4 lg:gap-6 z-10">
+        <div className="flex flex-1 justify-end items-center gap-3 sm:gap-4 lg:gap-6 z-10">
           <div className="relative flex items-center h-8">
             <AnimatePresence mode="wait">
               {isSearchOpen ? (
@@ -166,18 +179,22 @@ export default function Layout() {
               )}
             </AnimatePresence>
           </div>
+
+          {/* Account Section */}
           {user ? (
-            <div className="hidden md:flex items-center gap-3 md:gap-4">
-              {user.email === 'faisal301196@gmail.com' && (
-                <Link to="/admin" className="text-xs font-medium opacity-80 hover:opacity-100 hover:text-gold-400 transition-colors uppercase tracking-wider py-1">
-                  Admin
-                </Link>
-              )}
-              <Link to="/profile" className="text-xs sm:text-sm font-medium opacity-90 hover:opacity-100 hover:text-gold-400 transition-colors truncate max-w-[90px] sm:max-w-[110px] py-1" title="My Profile">
-                {user.displayName?.split(' ')[0] || 'User'}
+            <div className="hidden md:flex items-center gap-3">
+              <Link 
+                to="/profile" 
+                className="flex items-center gap-1.5 text-xs sm:text-sm font-medium hover:text-gold-400 transition-colors py-1 group" 
+                title="My Profile"
+              >
+                <User className="w-4 h-4" />
+                <span className="truncate max-w-[80px] sm:max-w-[100px] opacity-90 group-hover:opacity-100">
+                  {user.displayName?.split(' ')[0] || 'Account'}
+                </span>
               </Link>
               <button onClick={signOut} className="hover:text-gold-400 transition-colors p-1 flex items-center justify-center" title="Sign Out">
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
@@ -189,7 +206,9 @@ export default function Layout() {
               <span>Sign In</span>
             </button>
           )}
-          <Link to="/cart" className="flex items-center justify-center relative hover:text-gold-400 transition-colors shrink-0 p-1">
+
+          {/* Cart Bag */}
+          <Link to="/cart" className="flex items-center justify-center relative hover:text-gold-400 transition-colors shrink-0 p-1" title="Cart">
             <ShoppingBag className="w-5 h-5" />
             <AnimatePresence>
               {cartCount > 0 && (
@@ -224,7 +243,7 @@ export default function Layout() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-50 md:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50"
               onClick={() => setIsMobileMenuOpen(false)}
             />
             <motion.div
@@ -232,15 +251,25 @@ export default function Layout() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.3 }}
-              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-[360px] bg-emerald-950/98 backdrop-blur-md border-l border-white/10 z-50 flex flex-col overflow-y-auto md:hidden"
+              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-[380px] bg-emerald-950/98 backdrop-blur-md border-l border-white/10 z-50 flex flex-col overflow-y-auto"
             >
-              <div className="p-4 flex items-center">
+              <div className="p-4 flex items-center justify-between border-b border-white/10">
+                <AlmasLogo variant="horizontal" />
                 <button onClick={() => setIsMobileMenuOpen(false)} className="text-white/80 hover:text-gold-400 p-2 hover:bg-white/10 rounded-full transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
-                            <div className="flex flex-col px-4 pb-4">
+              <div className="flex flex-col px-4 py-3">
+                {isAdmin && (
+                  <Link 
+                    to="/admin" 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="flex items-center gap-3 py-3 border-b border-white/5 group text-gold-400 font-semibold"
+                  >
+                    <span className="uppercase text-sm tracking-widest text-gold-400 font-medium group-hover:text-gold-300 transition-colors">Admin</span>
+                  </Link>
+                )}
                 <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 py-3 border-b border-white/5 group">
                   <span className="text-white/90 font-medium group-hover:text-gold-400 transition-colors uppercase text-sm tracking-widest">Home</span>
                 </Link>
@@ -319,20 +348,29 @@ export default function Layout() {
                       setIsMobileMenuOpen(false);
                       openAuthModal('login');
                     }}
-                    className="w-[calc(50%-0.5rem)] bg-[#D4A359] hover:bg-[#c19248] text-white py-3 px-4 flex items-center justify-center gap-2 transition-colors text-sm font-medium"
+                    className="w-full bg-[#D4A359] hover:bg-[#c19248] text-white py-3 px-4 flex items-center justify-center gap-2 transition-colors text-sm font-medium uppercase tracking-wider"
                   >
-                    <User className="w-4 h-4" /> Login
+                    <User className="w-4 h-4" /> Sign In / Register
                   </button>
                 ) : (
-                  <button 
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      signOut();
-                    }}
-                    className="w-[calc(50%-0.5rem)] bg-[#D4A359] hover:bg-[#c19248] text-white py-3 px-4 flex items-center justify-center gap-2 transition-colors text-sm font-medium"
-                  >
-                    <LogOut className="w-4 h-4" /> Logout
-                  </button>
+                  <div className="flex gap-3">
+                    <Link 
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex-1 bg-white/10 hover:bg-white/15 text-white py-3 px-4 flex items-center justify-center gap-2 transition-colors text-xs font-semibold uppercase tracking-wider border border-white/20"
+                    >
+                      <User className="w-4 h-4" /> Profile
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        signOut();
+                      }}
+                      className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 py-3 px-4 flex items-center justify-center gap-2 transition-colors text-xs font-semibold uppercase tracking-wider border border-red-500/30"
+                    >
+                      <LogOut className="w-4 h-4" /> Logout
+                    </button>
+                  </div>
                 )}
               </div>
             </motion.div>
@@ -557,7 +595,9 @@ export default function Layout() {
 
           <button 
             onClick={() => {
-              if (user) {
+              if (isAdmin) {
+                navigate('/admin');
+              } else if (user) {
                 navigate('/profile');
               } else {
                 openAuthModal('login');
@@ -565,12 +605,19 @@ export default function Layout() {
             }}
             className={cn(
               "flex flex-col items-center justify-center py-1 transition-colors",
-              location.pathname === '/profile' ? "text-[#D4A359] font-medium" : "text-neutral-600 hover:text-neutral-900"
+              (location.pathname === '/admin' || location.pathname === '/profile') ? "text-[#D4A359] font-medium" : "text-neutral-600 hover:text-neutral-900"
             )}
           >
-            <User className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-tight">
-              {user ? (user.displayName?.split(' ')[0] || 'Account') : 'Account'}
+            {isAdmin ? (
+              <div className="relative">
+                <ShieldCheck className="w-5 h-5 mb-0.5 text-[#D4A359]" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#D4A359] rounded-full animate-pulse"></span>
+              </div>
+            ) : (
+              <User className="w-5 h-5 mb-0.5" />
+            )}
+            <span className={cn("text-[10px] tracking-tight", isAdmin ? "font-bold text-[#D4A359]" : "")}>
+              {isAdmin ? 'Admin' : (user ? (user.displayName?.split(' ')[0] || 'Account') : 'Account')}
             </span>
           </button>
 

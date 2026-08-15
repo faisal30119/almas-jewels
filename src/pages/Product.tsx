@@ -23,12 +23,11 @@ const imageMap: Record<string, string> = {
 
 };
 
-import { products as hardcodedProducts, Product } from '../data';
+import { Product } from '../data';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { cn } from '../lib/utils';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { fetchProductById } from '../lib/productsService';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -72,55 +71,25 @@ export default function ProductDetail() {
   };
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      // Check hardcoded data first
-      const hardcoded = hardcodedProducts.find(p => p.id === id);
-      if (hardcoded) {
-        setProduct(hardcoded);
-        setIsLoading(false);
-        return;
-      }
-      
+    let isMounted = true;
+    const loadProduct = async () => {
+      if (!id) return;
       try {
-        if (!id) return;
-        const res = await fetch(`/api/products/${id}`);
-        if (res.ok) {
-          const item = await res.json();
-          setProduct({
-            ...item,
-            id: String(item.id),
-            stoneColor: item.stone_color || item.stoneColor,
-            image: imageMap[item.image] || item.image
-          } as Product);
-          setIsLoading(false);
-          return;
+        const prod = await fetchProductById(id);
+        if (isMounted && prod) {
+          setProduct(prod);
         }
-      } catch (err) {
-        console.error("Error fetching from API:", err);
-      }
-
-      // Fallback to Firestore
-      try {
-        if (!id) return;
-        const docRef = doc(db, 'products', id);
-        
-        const docSnap = await Promise.race([
-          getDoc(docRef),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
-        ]) as any;
-
-        
-        if (docSnap.exists()) {
-          setProduct({ id: docSnap.id, ...docSnap.data(), image: docSnap.data().image?.includes('unsplash.com') ? occasionCollectionImg : docSnap.data().image } as Product);
-        }
-      } catch (err) {
-        console.error("Error fetching product:", err);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
     
-    fetchProduct();
+    loadProduct();
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (isLoading) {

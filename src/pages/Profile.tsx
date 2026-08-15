@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Package, Calendar, LogOut, Heart, Trash2, Loader2, KeyRound, CheckCircle2, AlertCircle, Mail, User as UserIcon } from 'lucide-react';
+import { Package, Calendar, LogOut, Heart, Trash2, Loader2, KeyRound, CheckCircle2, AlertCircle, Mail, User as UserIcon, ShieldCheck } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +11,7 @@ import { products as hardcodedProducts, Product } from '../data';
 import { cn } from '../lib/utils';
 
 export default function Profile() {
-  const { user, openAuthModal, signOut, resetPassword } = useAuth();
+  const { user, openAuthModal, signOut, resetPassword, isAdmin } = useAuth();
   const { wishlistIds, toggleWishlist } = useWishlist();
   
   const [orders, setOrders] = useState<any[]>([]);
@@ -194,16 +194,35 @@ export default function Profile() {
     <div className="pt-12 pb-24 px-6 md:px-12 lg:px-24 max-w-5xl mx-auto min-h-[70vh]">
       <div className="flex flex-col md:flex-row justify-between items-start mb-12 gap-6">
         <div>
-          <h1 className="text-4xl font-serif text-emerald-950 mb-2">My Profile</h1>
-          <p className="text-gray-500 font-light text-lg">Welcome back, {user.displayName}</p>
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <h1 className="text-4xl font-serif text-emerald-950">My Profile</h1>
+            {isAdmin && (
+              <span className="inline-flex items-center gap-1 bg-[#D4A359]/20 text-[#B58238] border border-[#D4A359]/40 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Administrator
+              </span>
+            )}
+          </div>
+          <p className="text-gray-500 font-light text-lg">Welcome back, {user.displayName || user.email}</p>
         </div>
-        <button 
-          onClick={signOut}
-          className="flex items-center gap-2 text-sm uppercase tracking-widest font-medium text-gray-500 hover:text-emerald-950 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Sign Out
-        </button>
+        <div className="flex items-center gap-4 flex-wrap">
+          {isAdmin && (
+            <Link 
+              to="/admin" 
+              className="flex items-center gap-2 bg-emerald-950 hover:bg-emerald-900 text-[#D4A359] border border-[#D4A359]/40 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded shadow-sm transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4 text-[#D4A359]" />
+              Go to Admin Panel
+            </Link>
+          )}
+          <button 
+            onClick={signOut}
+            className="flex items-center gap-2 text-sm uppercase tracking-widest font-medium text-gray-500 hover:text-emerald-950 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-8 border-b border-gray-200 mb-8">
@@ -291,7 +310,7 @@ export default function Profile() {
                     <div>
                       <p className="font-semibold">Reset Link Sent Successfully!</p>
                       <p className="text-xs text-emerald-800 mt-0.5">
-                        Please check your inbox (and spam folder) for an email from Almas Jewels with your password reset link.
+                        Please check your inbox (and spam folder) for an email from Almas Bridal with your password reset link.
                       </p>
                     </div>
                   </div>

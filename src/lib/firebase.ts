@@ -15,29 +15,32 @@ import {
   updateProfile 
 } from 'firebase/auth';
 import { initializeFirestore } from 'firebase/firestore';
+import firebaseConfigJson from '../../firebase-applet-config.json';
 
-// We prioritize the generated config, and only use env variables if they look valid.
-const getEnv = (key, fallback) => {
-  const val = import.meta.env[key];
-  if (val && val !== 'alc_mahmood@8' && val !== 'almas_bridal') return val;
-  return fallback;
+// Validate if an env value looks like a genuine Firebase key/domain rather than a placeholder/username
+const isValidEnv = (val: string | undefined): boolean => {
+  if (!val) return false;
+  if (val.includes('@') || val.length < 5) return false;
+  return true;
 };
 
 const firebaseConfig = {
-  apiKey: getEnv('VITE_FIREBASE_API_KEY', "AIzaSyAiwqhLNOjWLRCKr-Xx6DSJtvEDfsAZ54c"),
-  authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN', "ancient-episode-sn50x.firebaseapp.com"),
-  projectId: getEnv('VITE_FIREBASE_PROJECT_ID', "ancient-episode-sn50x"),
-  storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET', "ancient-episode-sn50x.firebasestorage.app"),
-  messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID', "167668085938"),
-  appId: getEnv('VITE_FIREBASE_APP_ID', "1:167668085938:web:a76d6275e2bca07e3e45ab")
+  apiKey: isValidEnv(import.meta.env.VITE_FIREBASE_API_KEY) ? import.meta.env.VITE_FIREBASE_API_KEY : firebaseConfigJson.apiKey,
+  authDomain: isValidEnv(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) ? import.meta.env.VITE_FIREBASE_AUTH_DOMAIN : firebaseConfigJson.authDomain,
+  projectId: isValidEnv(import.meta.env.VITE_FIREBASE_PROJECT_ID) ? import.meta.env.VITE_FIREBASE_PROJECT_ID : firebaseConfigJson.projectId,
+  storageBucket: isValidEnv(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) ? import.meta.env.VITE_FIREBASE_STORAGE_BUCKET : firebaseConfigJson.storageBucket,
+  messagingSenderId: isValidEnv(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) ? import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID : firebaseConfigJson.messagingSenderId,
+  appId: isValidEnv(import.meta.env.VITE_FIREBASE_APP_ID) ? import.meta.env.VITE_FIREBASE_APP_ID : firebaseConfigJson.appId
 };
 
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-}, "ai-studio-almasbridal-56acefbb-6df3-451a-a59f-324bc890894b");
+export const db = initializeFirestore(
+  app, 
+  { experimentalForceLongPolling: true }, 
+  firebaseConfigJson.firestoreDatabaseId || "(default)"
+);
 
 export const googleProvider = new GoogleAuthProvider();
 export { 

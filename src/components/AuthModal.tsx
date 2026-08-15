@@ -130,13 +130,21 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
     setError(null);
     setLoading(true);
     try {
-      await signInWithGoogle();
-      if (user) {
+      const signedInUser = await signInWithGoogle();
+      if (signedInUser) {
         handleClose();
       }
     } catch (err: any) {
       if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
-        setError(err?.message || 'Google Sign-In failed.');
+        if (err?.code === 'auth/unauthorized-domain') {
+          setError(`Domain not authorized for Google Sign-In (${window.location.hostname}). Please add it in Firebase Console > Authentication > Settings > Authorized domains.`);
+        } else if (err?.code === 'auth/operation-not-allowed') {
+          setError("Google Sign-In is not enabled yet in your Firebase Project. Please enable it in Firebase Console > Authentication > Sign-in method.");
+        } else if (err?.code === 'auth/api-key-not-valid') {
+          setError("Invalid Firebase API Key. Please verify your Firebase project setup.");
+        } else {
+          setError(err?.message || 'Google Sign-In failed. Please try again.');
+        }
       }
     } finally {
       setLoading(false);

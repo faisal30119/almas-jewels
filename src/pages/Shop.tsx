@@ -22,11 +22,10 @@ const imageMap: Record<string, string> = {
 
 };
 
-import { products as hardcodedProducts, Product, categories, stoneColors, platings, priceRanges } from '../data';
+import { Product, categories, stoneColors, platings, priceRanges } from '../data';
 import { cn } from '../lib/utils';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { useWishlist } from '../context/WishlistContext';
+import { fetchAllProducts } from '../lib/productsService';
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,48 +36,23 @@ export default function Shop() {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      let pgProducts: Product[] = [];
-      let fbProducts: Product[] = [];
-      
+    let isMounted = true;
+    const loadProducts = async () => {
       try {
-        const res = await fetch('/api/products');
-        if (res.ok) {
-          const data = await res.json();
-          pgProducts = (Array.isArray(data) ? data : []).map((item: any) => ({
-            ...item,
-            id: String(item.id),
-            stoneColor: item.stone_color || item.stoneColor,
-            image: item.image?.includes('unsplash.com') ? occasionCollectionImg : (imageMap[item.image] || item.image)
-          }));
+        const prods = await fetchAllProducts();
+        if (isMounted) {
+          setDbProducts(prods);
         }
-      } catch (err) {
-        console.error("Failed to fetch products from API:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-      
-      try {
-        
-        const querySnapshot = await Promise.race([
-          getDocs(collection(db, 'products')),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
-        ]) as any;
-
-        fbProducts = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(), image: doc.data().image?.includes('unsplash.com') ? occasionCollectionImg : doc.data().image
-        })) as Product[];
-      } catch (fbErr) {
-        console.error("Failed to fetch from Firebase:", fbErr);
-      }
-      
-      
-      const allProds = [...hardcodedProducts, ...fbProducts, ...pgProducts];
-      const uniqueProds = Array.from(new Map(allProds.map(item => [item.name, item])).values());
-      setDbProducts(uniqueProds);
-
-      setIsLoading(false);
     };
-    fetchProducts();
+    loadProducts();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const activeCategory = searchParams.get('category');
