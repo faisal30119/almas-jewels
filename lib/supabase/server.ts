@@ -1,0 +1,26 @@
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+
+export const createClient = () => {
+  const cookieStore = cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+          // In Route Handlers and Server Actions, cookies() is writable.
+          // In Server Components it is read-only — the try/catch swallows that safely.
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, (options ?? {}) as Parameters<typeof cookieStore.set>[2])
+            );
+          } catch {}
+        },
+      },
+    }
+  );
+};

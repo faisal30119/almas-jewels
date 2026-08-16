@@ -5,7 +5,6 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { requireAuth, requireAdmin, AuthRequest } from "./src/middleware/auth.ts";
 import { db } from "./src/db/index.ts";
-import { adminDb } from "./src/lib/firebase-admin.ts";
 import { users, products, orders, orderItems, coupons } from "./src/db/schema.ts";
 import { products as catalogProducts } from "./src/data.ts";
 import { eq, lt } from "drizzle-orm";
@@ -195,22 +194,9 @@ async function startServer() {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
-    const { uid, email } = req.user;
+    const { id: uid, email } = req.user;
     try {
-      // 1. Sync with Firestore first
-      if (adminDb) {
-        try {
-          await adminDb.collection('users').doc(uid).set({
-            uid,
-            email: email || '',
-            lastLogin: new Date().toISOString()
-          }, { merge: true });
-        } catch (fErr) {
-          // ignore Firestore sync failure
-        }
-      }
-
-      // 2. Optionally sync with SQL if connected
+      // Sync with Cloud SQL if connected
       try {
         const { eq } = await import('drizzle-orm');
         const existingUser = await db.select().from(users).where(eq(users.uid, uid));
@@ -498,7 +484,7 @@ async function startServer() {
             items.map((i: any) => ({
               orderId: newOrder.id,
               productId: !isNaN(Number(i.productId)) ? Number(i.productId) : null,
-              firebaseProductId: isNaN(Number(i.productId)) ? String(i.productId) : null,
+              externalProductId: isNaN(Number(i.productId)) ? String(i.productId) : null,
               quantity: Number(i.quantity) || 1,
               price: Math.round(Number(i.price) * 100) || 0
             }))
@@ -712,7 +698,7 @@ async function startServer() {
   });
 
   app.post("/api/orders/cancel", async (req, res) => {
-    const { razorpayOrderId, firebaseDocId, reason } = req.body;
+    const { razorpayOrderId, supabaseDocId, firebaseDocId, reason } = req.body;
     
     if (!razorpayOrderId) {
       return res.status(400).json({ error: "Missing order ID" });
