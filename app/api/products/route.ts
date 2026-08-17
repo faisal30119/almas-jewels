@@ -3,14 +3,20 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/auth-helper';
 import { FALLBACK_PRODUCTS } from '@/lib/data';
 
-export async function GET() {
-  const { data, error } = await supabaseAdmin
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const search = url.searchParams.get('search') ?? '';
+
+  let query = supabaseAdmin
     .from('products')
     .select('*')
     .order('created_at', { ascending: false });
 
+  if (search) query = query.ilike('name', `%${search}%`);
+
+  const { data, error } = await query;
+
   if (error) {
-    // Return fallback products if DB not seeded yet
     return NextResponse.json(FALLBACK_PRODUCTS);
   }
 
@@ -18,18 +24,23 @@ export async function GET() {
     return NextResponse.json(FALLBACK_PRODUCTS);
   }
 
-  // Normalize DB column names to camelCase
+  // Return both snake_case and camelCase aliases for compatibility
   const products = data.map((p) => ({
-    id: String(p.id),
+    id: p.id,
     name: p.name,
     price: p.price,
     stock: p.stock,
     image: p.image,
     category: p.category,
+    stone_color: p.stone_color,
     stoneColor: p.stone_color,
     plating: p.plating,
     description: p.description,
     inclusions: p.inclusions ?? [],
+    is_featured: p.is_featured ?? false,
+    meta_title: p.meta_title ?? '',
+    meta_description: p.meta_description ?? '',
+    slug: p.slug ?? '',
   }));
 
   return NextResponse.json(products);
@@ -57,10 +68,14 @@ export async function POST(request: Request) {
       stock: Number(stock ?? 10),
       image: image ?? null,
       category: category ?? null,
-      stone_color: stoneColor ?? null,
+      stone_color: stoneColor ?? body.stone_color ?? null,
       plating: plating ?? null,
       description: description ?? null,
       inclusions: inclusions ?? [],
+      is_featured: body.is_featured ?? false,
+      meta_title: body.meta_title ?? null,
+      meta_description: body.meta_description ?? null,
+      slug: body.slug ?? null,
     })
     .select()
     .single();

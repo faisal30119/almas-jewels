@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { code, discount_amount } = body;
+  const { code, discount_amount, discount_type, min_order_amount, usage_limit, expires_at } = body;
 
   if (!code || !discount_amount) {
     return NextResponse.json({ error: 'code and discount_amount are required' }, { status: 400 });
@@ -42,6 +42,10 @@ export async function POST(request: Request) {
     .insert({
       code: code.toUpperCase().trim(),
       discount_amount: Math.round(discount_amount),
+      discount_type: discount_type ?? 'flat',
+      min_order_amount: Number(min_order_amount ?? 0),
+      usage_limit: usage_limit ?? null,
+      expires_at: expires_at ?? null,
       is_active: true,
     })
     .select()

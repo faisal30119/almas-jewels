@@ -66,9 +66,15 @@ export async function PUT(
   if (body.image !== undefined) updatePayload.image = body.image;
   if (body.category !== undefined) updatePayload.category = body.category;
   if (body.stoneColor !== undefined) updatePayload.stone_color = body.stoneColor;
+  if (body.stone_color !== undefined) updatePayload.stone_color = body.stone_color;
   if (body.plating !== undefined) updatePayload.plating = body.plating;
   if (body.description !== undefined) updatePayload.description = body.description;
   if (body.inclusions !== undefined) updatePayload.inclusions = body.inclusions;
+  if (body.is_featured !== undefined) updatePayload.is_featured = body.is_featured;
+  if (body.meta_title !== undefined) updatePayload.meta_title = body.meta_title;
+  if (body.meta_description !== undefined) updatePayload.meta_description = body.meta_description;
+  if (body.slug !== undefined) updatePayload.slug = body.slug;
+  updatePayload.updated_at = new Date().toISOString();
 
   const { data, error } = await supabaseAdmin
     .from('products')

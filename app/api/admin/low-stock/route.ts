@@ -1,25 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/auth-helper';
 
-export async function GET(request: Request) {
-  const { user, error: authError } = await requireAdmin(request);
-  if (authError || !user) {
-    return NextResponse.json({ error: authError ?? 'Unauthorized' }, { status: 401 });
-  }
+// GET /api/admin/low-stock — products with stock <= 5
+export async function GET(req: NextRequest) {
+  const { error } = await requireAdmin(req);
+  if (error) return NextResponse.json({ error }, { status: 401 });
 
-  const url = new URL(request.url);
-  const threshold = Number(url.searchParams.get('threshold') ?? 5);
-
-  const { data, error } = await supabaseAdmin
+  const { data, error: dbErr } = await supabaseAdmin
     .from('products')
     .select('id, name, stock, category')
-    .lt('stock', threshold)
-    .order('stock', { ascending: true });
+    .lte('stock', 5)
+    .order('stock', { ascending: true })
+    .limit(20);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ products: data ?? [], threshold });
+  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
+  return NextResponse.json({ data: data ?? [] });
 }

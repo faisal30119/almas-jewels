@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { requireAuth } from '@/lib/auth-helper';
+import { sendOrderConfirmationEmails } from '@/lib/email';
 
 export async function POST(request: Request) {
   const { user, error: authError } = await requireAuth(request);
@@ -86,6 +87,25 @@ export async function POST(request: Request) {
       }
     }
   }
+
+  // Send confirmation emails (non-blocking — don't fail the order if email fails)
+  const addressParts = [
+    shippingAddress?.address,
+    shippingAddress?.city,
+    shippingAddress?.state,
+    shippingAddress?.pincode,
+  ].filter(Boolean).join(', ');
+
+  sendOrderConfirmationEmails({
+    customerName:  name ?? 'Customer',
+    customerEmail: email ?? '',
+    customerPhone: shippingAddress?.phone ?? '',
+    orderId:       razorpay_order_id,
+    items:         items ?? [],
+    amount:        Math.round(amount),
+    address:       addressParts,
+    createdAt:     order.created_at ?? new Date().toISOString(),
+  }).catch((err) => console.error('Email send error:', err));
 
   return NextResponse.json({ success: true, orderId: razorpay_order_id, dbOrderId: order.id });
 }

@@ -2,9 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import WhatsAppButton from '@/components/WhatsAppButton';
+import StorefrontShell from '@/components/StorefrontShell';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,10 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="bg-white font-sans text-gray-900 antialiased">
         <Providers>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-          <WhatsAppButton />
+          <StorefrontShell>{children}</StorefrontShell>
         </Providers>
       </body>
     </html>
