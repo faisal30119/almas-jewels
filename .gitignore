@@ -1,8 +1,16 @@
--e node_modules/
+node_modules/
 build/
 coverage/
 .DS_Store
 *.log
 .env*
 !.env.example
-node_modules
+
+# Next.js build output
+.next/
+out/
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
