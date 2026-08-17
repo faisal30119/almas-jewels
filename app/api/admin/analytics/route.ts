@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/auth-helper';
 
+// Revalidate every 60 seconds — reduces DB hits on repeat dashboard loads
+export const revalidate = 60;
+
 // GET /api/admin/analytics
 export async function GET(req: NextRequest) {
   const { error } = await requireAdmin(req);
@@ -11,20 +14,24 @@ export async function GET(req: NextRequest) {
   const since30 = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
   const since7  = new Date(now -  7 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Fetch last 30 days orders (includes items JSONB for top-products aggregation)
-  const { data: orders30 } = await supabaseAdmin
-    .from('user_orders')
-    .select('amount, status, created_at, items')
-    .gte('created_at', since30)
-    .not('status', 'eq', 'Failed');
+  // Run all 3 DB queries in parallel
+  const [ordersRes, customersRes, productsRes] = await Promise.all([
+    supabaseAdmin
+      .from('user_orders')
+      .select('amount, status, created_at, items')
+      .gte('created_at', since30)
+      .not('status', 'eq', 'Failed'),
+    supabaseAdmin
+      .from('user_profiles')
+      .select('*', { count: 'exact', head: true }),
+    supabaseAdmin
+      .from('products')
+      .select('*', { count: 'exact', head: true }),
+  ]);
 
-  const { count: totalCustomers } = await supabaseAdmin
-    .from('user_profiles')
-    .select('*', { count: 'exact', head: true });
-
-  const { count: totalProducts } = await supabaseAdmin
-    .from('products')
-    .select('*', { count: 'exact', head: true });
+  const orders30       = ordersRes.data;
+  const totalCustomers = customersRes.count;
+  const totalProducts  = productsRes.count;
 
   // ── Revenue / orders chart ───────────────────────────────────────────────
   const revenueByDay: Record<string, number> = {};

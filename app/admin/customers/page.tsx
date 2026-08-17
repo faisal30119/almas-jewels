@@ -5,7 +5,7 @@ import { adminFetch, formatDate } from '@/lib/admin-utils';
 
 interface Customer {
   id: string; uid: string; email: string; display_name: string;
-  created_at: string; user_orders: { count: number }[];
+  created_at: string; order_count: number;
 }
 
 export default function CustomersPage() {
@@ -66,7 +66,7 @@ export default function CustomersPage() {
               <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{c.display_name ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-600">{c.email}</td>
-                <td className="px-4 py-3 text-gray-600">{c.user_orders?.[0]?.count ?? 0}</td>
+                <td className="px-4 py-3 text-gray-600">{c.order_count ?? 0}</td>
                 <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(c.created_at)}</td>
               </tr>
             ))}

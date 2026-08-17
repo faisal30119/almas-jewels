@@ -6,9 +6,14 @@ import { useToast } from '@/components/admin/Toast';
 
 interface Order {
   id: number; order_id: string; amount: number; status: string; created_at: string;
-  shipping_details: { name?: string; email?: string; phone?: string; address?: string };
+  shipping_details: {
+    name?: string; email?: string; phone?: string;
+    address?: string; city?: string; state?: string; pincode?: string;
+    payment_id?: string; coupon_code?: string; coupon_discount?: number;
+  };
   items: { name: string; quantity: number; price: number }[];
-  tracking_number?: string; notes?: string; timeline?: { status: string; note: string; created_at: string }[];
+  tracking_number?: string; notes?: string;
+  timeline?: { status: string; note: string; created_at: string }[];
 }
 
 const STATUSES = ['Processing', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
@@ -181,23 +186,71 @@ export default function OrdersPage() {
               <button onClick={() => setDetail(null)} className="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
             </div>
             <div className="px-6 py-5 space-y-5">
-              {/* Info */}
-              <div className="bg-gray-50 p-4 text-sm space-y-1">
-                <div><span className="text-gray-500">Order ID:</span> <span className="font-mono font-medium">{detail.order_id}</span></div>
-                <div><span className="text-gray-500">Date:</span> {formatDate(detail.created_at)}</div>
-                <div><span className="text-gray-500">Amount:</span> <strong>{formatPrice(detail.amount)}</strong></div>
+              {/* Order Summary */}
+              <div className="bg-gray-50 p-4 text-sm space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Order ID</span>
+                  <span className="font-mono font-medium text-xs">{detail.order_id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Date</span>
+                  <span>{formatDate(detail.created_at)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Amount Paid</span>
+                  <span className="font-bold text-emerald-800">{formatPrice(detail.amount)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Payment Status</span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 ${STATUS_COLORS[detail.status] ?? 'bg-gray-100 text-gray-600'}`}>{detail.status}</span>
+                </div>
+                {detail.shipping_details?.payment_id && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Payment ID</span>
+                    <span className="font-mono text-xs text-gray-600">{detail.shipping_details.payment_id}</span>
+                  </div>
+                )}
+                {detail.tracking_number && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Tracking No.</span>
+                    <span className="font-mono text-xs font-semibold text-emerald-700">{detail.tracking_number}</span>
+                  </div>
+                )}
               </div>
 
-              {/* Shipping */}
+              {/* Customer & Shipping */}
               {detail.shipping_details && (
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Shipping Details</p>
-                  <div className="text-sm space-y-1">
-                    <div>{detail.shipping_details.name}</div>
-                    <div>{detail.shipping_details.email}</div>
-                    <div>{detail.shipping_details.phone}</div>
-                    <div className="text-gray-500">{detail.shipping_details.address}</div>
+                  <p className="text-xs uppercase tracking-widest text-gray-400 mb-3">Customer &amp; Shipping</p>
+                  <div className="bg-white border border-gray-100 divide-y divide-gray-50 text-sm">
+                    {[
+                      { label: 'Name',    value: detail.shipping_details.name },
+                      { label: 'Email',   value: detail.shipping_details.email },
+                      { label: 'Phone',   value: detail.shipping_details.phone },
+                      { label: 'Address', value: detail.shipping_details.address },
+                      { label: 'City',    value: detail.shipping_details.city },
+                      { label: 'State',   value: detail.shipping_details.state },
+                      { label: 'Pincode', value: detail.shipping_details.pincode },
+                    ].filter(r => r.value).map(({ label, value }) => (
+                      <div key={label} className="flex px-3 py-2 gap-4">
+                        <span className="text-gray-400 w-20 shrink-0">{label}</span>
+                        <span className="text-gray-800 font-medium break-all">{value}</span>
+                      </div>
+                    ))}
                   </div>
+                  {detail.shipping_details.email && (
+                    <a href={`mailto:${detail.shipping_details.email}`}
+                      className="mt-2 inline-block text-xs text-emerald-700 hover:underline">
+                      ✉ Email customer
+                    </a>
+                  )}
+                  {detail.shipping_details.phone && (
+                    <a href={`https://wa.me/${detail.shipping_details.phone?.replace(/\D/g,'')}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="mt-2 ml-4 inline-block text-xs text-emerald-700 hover:underline">
+                      💬 WhatsApp
+                    </a>
+                  )}
                 </div>
               )}
 
