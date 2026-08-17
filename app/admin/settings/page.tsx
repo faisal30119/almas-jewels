@@ -52,26 +52,26 @@ export default function SettingsPage() {
     setSaving(false);
   }
 
-  if (loading) return <div className="p-6 text-sm text-gray-400">Loading settings…</div>;
+  if (loading) return <div className="p-4 sm:p-6 text-sm text-gray-400">Loading settings…</div>;
 
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="bg-white border border-gray-200 p-6 mb-4">
+    <div className="bg-white border border-gray-200 p-4 sm:p-6 mb-4">
       <h2 className="text-xs uppercase tracking-widest text-gray-400 mb-4 font-medium">{title}</h2>
       {children}
     </div>
   );
 
   return (
-    <div className="p-6 max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-playfair font-bold text-gray-900">Settings</h1>
-        <button onClick={save} disabled={saving} className="flex items-center gap-2 bg-emerald-900 text-white text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-emerald-800 disabled:opacity-60">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <h1 className="text-xl sm:text-2xl font-playfair font-bold text-gray-900">Settings</h1>
+        <button onClick={save} disabled={saving} className="self-start sm:self-auto flex items-center gap-2 bg-emerald-900 text-white text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-emerald-800 disabled:opacity-60">
           <Save size={14} /> {saving ? 'Saving…' : 'Save All'}
         </button>
       </div>
 
       <Section title="Brand">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div><label className={LABEL}>Site Name</label><input type="text" value={settings.site_name} onChange={set('site_name')} className={INPUT} /></div>
           <div><label className={LABEL}>Tagline</label><input type="text" value={settings.site_tagline} onChange={set('site_tagline')} className={INPUT} /></div>
         </div>
@@ -79,7 +79,7 @@ export default function SettingsPage() {
       </Section>
 
       <Section title="Contact">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div><label className={LABEL}>Email</label><input type="email" value={settings.contact_email} onChange={set('contact_email')} className={INPUT} /></div>
           <div><label className={LABEL}>Phone</label><input type="text" value={settings.contact_phone} onChange={set('contact_phone')} className={INPUT} /></div>
           <div><label className={LABEL}>WhatsApp Number</label><input type="text" value={settings.whatsapp_number} onChange={set('whatsapp_number')} className={INPUT} /></div>
@@ -106,8 +106,9 @@ export default function SettingsPage() {
       </Section>
 
       <Section title="Shipping & Tax">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div><label className={LABEL}>Shipping Fee (₹)</label><input type="number" value={settings.shipping_fee} onChange={set('shipping_fee')} className={INPUT} /></div>
+
           <div><label className={LABEL}>Free Shipping Above (₹)</label><input type="number" value={settings.free_shipping_above} onChange={set('free_shipping_above')} className={INPUT} /></div>
           <div><label className={LABEL}>Tax %</label><input type="number" value={settings.tax_percent} onChange={set('tax_percent')} className={INPUT} /></div>
         </div>

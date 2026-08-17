@@ -100,11 +100,11 @@ export default function MediaPage() {
   const pageNumber = page + 1;
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-playfair font-bold text-gray-900">Media Library</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-xl sm:text-2xl font-playfair font-bold text-gray-900">Media Library</h1>
+          <p className="text-xs sm:text-sm text-gray-500">
             Page {pageNumber} · {items.length} images
           </p>
         </div>
@@ -121,6 +121,7 @@ export default function MediaPage() {
           </button>
         </div>
       </div>
+
 
       {/* Drop zone */}
       <div

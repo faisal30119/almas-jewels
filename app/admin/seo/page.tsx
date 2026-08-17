@@ -44,19 +44,20 @@ export default function SEOPage() {
     setSaving(false);
   }
 
-  if (loading) return <div className="p-6 text-sm text-gray-400">Loading…</div>;
+  if (loading) return <div className="p-4 sm:p-6 text-sm text-gray-400">Loading…</div>;
 
   return (
-    <div className="p-6 max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-playfair font-bold text-gray-900">SEO</h1>
-          <p className="text-sm text-gray-500">Global search engine optimization settings</p>
+          <h1 className="text-xl sm:text-2xl font-playfair font-bold text-gray-900">SEO</h1>
+          <p className="text-xs sm:text-sm text-gray-500">Global search engine optimization settings</p>
         </div>
-        <button onClick={save} disabled={saving} className="flex items-center gap-2 bg-emerald-900 text-white text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-emerald-800 disabled:opacity-60">
+        <button onClick={save} disabled={saving} className="self-start sm:self-auto flex items-center gap-2 bg-emerald-900 text-white text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-emerald-800 disabled:opacity-60">
           <Save size={14} /> {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
+
 
       <div className="bg-white border border-gray-200 p-6 mb-4">
         <h2 className="text-xs uppercase tracking-widest text-gray-400 mb-4">Meta Tags</h2>

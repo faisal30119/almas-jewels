@@ -260,18 +260,18 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="bg-emerald-950 py-14 px-6 text-center">
-        <h1 className="font-serif text-4xl text-white">Checkout</h1>
+      <div className="bg-emerald-950 py-10 sm:py-14 px-4 sm:px-6 text-center">
+        <h1 className="font-serif text-3xl sm:text-4xl text-white">Checkout</h1>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* ─── Shipping Form ─── */}
         <div>
-          <h2 className="font-serif text-2xl text-emerald-950 mb-6">Shipping Information</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <h2 className="font-serif text-xl sm:text-2xl text-emerald-950 mb-4 sm:mb-6">Shipping Information</h2>
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
+                <label className="block text-[11px] sm:text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
                   First Name *
                 </label>
                 <input
@@ -279,11 +279,11 @@ export default function CheckoutPage() {
                   required
                   value={form.firstName}
                   onChange={handleFormChange}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm font-sans focus:outline-none focus:border-emerald-950"
+                  className="w-full border border-gray-300 px-3 py-2.5 text-sm font-sans focus:outline-none focus:border-emerald-950"
                 />
               </div>
               <div>
-                <label className="block text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
+                <label className="block text-[11px] sm:text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
                   Last Name *
                 </label>
                 <input
@@ -291,12 +291,12 @@ export default function CheckoutPage() {
                   required
                   value={form.lastName}
                   onChange={handleFormChange}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm font-sans focus:outline-none focus:border-emerald-950"
+                  className="w-full border border-gray-300 px-3 py-2.5 text-sm font-sans focus:outline-none focus:border-emerald-950"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
+              <label className="block text-[11px] sm:text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
                 Email *
               </label>
               <input
@@ -305,11 +305,11 @@ export default function CheckoutPage() {
                 required
                 value={form.email}
                 onChange={handleFormChange}
-                className="w-full border border-gray-300 px-3 py-2 text-sm font-sans focus:outline-none focus:border-emerald-950"
+                className="w-full border border-gray-300 px-3 py-2.5 text-sm font-sans focus:outline-none focus:border-emerald-950"
               />
             </div>
             <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
+              <label className="block text-[11px] sm:text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
                 Phone *
               </label>
               <input
@@ -318,11 +318,11 @@ export default function CheckoutPage() {
                 required
                 value={form.phone}
                 onChange={handleFormChange}
-                className="w-full border border-gray-300 px-3 py-2 text-sm font-sans focus:outline-none focus:border-emerald-950"
+                className="w-full border border-gray-300 px-3 py-2.5 text-sm font-sans focus:outline-none focus:border-emerald-950"
               />
             </div>
             <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
+              <label className="block text-[11px] sm:text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
                 Address *
               </label>
               <input
@@ -330,12 +330,12 @@ export default function CheckoutPage() {
                 required
                 value={form.address}
                 onChange={handleFormChange}
-                className="w-full border border-gray-300 px-3 py-2 text-sm font-sans focus:outline-none focus:border-emerald-950"
+                className="w-full border border-gray-300 px-3 py-2.5 text-sm font-sans focus:outline-none focus:border-emerald-950"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
+                <label className="block text-[11px] sm:text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
                   City *
                 </label>
                 <input
@@ -343,11 +343,11 @@ export default function CheckoutPage() {
                   required
                   value={form.city}
                   onChange={handleFormChange}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm font-sans focus:outline-none focus:border-emerald-950"
+                  className="w-full border border-gray-300 px-3 py-2.5 text-sm font-sans focus:outline-none focus:border-emerald-950"
                 />
               </div>
               <div>
-                <label className="block text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
+                <label className="block text-[11px] sm:text-xs font-sans uppercase tracking-wider text-gray-500 mb-1">
                   Postal Code *
                 </label>
                 <input
@@ -355,15 +355,15 @@ export default function CheckoutPage() {
                   required
                   value={form.postalCode}
                   onChange={handleFormChange}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm font-sans focus:outline-none focus:border-emerald-950"
+                  className="w-full border border-gray-300 px-3 py-2.5 text-sm font-sans focus:outline-none focus:border-emerald-950"
                 />
               </div>
             </div>
 
             {formError && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 p-3 text-red-600 text-sm font-sans">
-                <AlertCircle size={16} />
-                {formError}
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 p-3 text-red-600 text-xs sm:text-sm font-sans">
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{formError}</span>
               </div>
             )}
 
@@ -371,7 +371,7 @@ export default function CheckoutPage() {
               type="submit"
               disabled={submitting}
               className={cn(
-                'w-full flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-400 text-emerald-950 font-sans font-bold uppercase tracking-widest text-sm py-4 transition-colors',
+                'w-full flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-400 text-emerald-950 font-sans font-bold uppercase tracking-widest text-xs sm:text-sm py-3.5 sm:py-4 transition-colors',
                 submitting && 'opacity-70 cursor-not-allowed'
               )}
             >
@@ -383,23 +383,23 @@ export default function CheckoutPage() {
 
         {/* ─── Order Summary ─── */}
         <div>
-          <h2 className="font-serif text-2xl text-emerald-950 mb-6">Order Summary</h2>
-          <div className="bg-gray-50 border border-gray-100 p-6 space-y-4">
+          <h2 className="font-serif text-xl sm:text-2xl text-emerald-950 mb-4 sm:mb-6">Order Summary</h2>
+          <div className="bg-gray-50 border border-gray-100 p-4 sm:p-6 space-y-4">
             {/* Items */}
-            <div className="space-y-3 max-h-64 overflow-y-auto">
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
               {items.map(({ product, quantity }) => (
                 <div key={product.id} className="flex gap-3 items-center">
                   <img
                     src={product.image}
                     alt={product.name}
                     referrerPolicy="no-referrer"
-                    className="w-14 h-14 object-cover flex-shrink-0"
+                    className="w-12 h-12 sm:w-14 sm:h-14 object-cover flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-serif text-xs text-emerald-950 line-clamp-1">{product.name}</p>
-                    <p className="text-gray-400 text-xs font-sans">Qty: {quantity}</p>
+                    <p className="text-gray-400 text-[11px] sm:text-xs font-sans">Qty: {quantity}</p>
                   </div>
-                  <p className="text-sm font-sans font-bold text-emerald-950">
+                  <p className="text-xs sm:text-sm font-sans font-bold text-emerald-950 shrink-0">
                     {formatPrice(product.price * quantity)}
                   </p>
                 </div>
@@ -408,7 +408,7 @@ export default function CheckoutPage() {
 
             {/* Coupon */}
             <div className="border-t border-gray-200 pt-4">
-              <p className="text-xs font-sans uppercase tracking-wider text-gray-500 mb-2">
+              <p className="text-[11px] sm:text-xs font-sans uppercase tracking-wider text-gray-500 mb-2">
                 Coupon Code
               </p>
               <div className="flex gap-2">
@@ -423,13 +423,13 @@ export default function CheckoutPage() {
                     }
                   }}
                   placeholder="WELCOME10"
-                  className="flex-1 border border-gray-300 px-3 py-2 text-sm font-sans focus:outline-none focus:border-emerald-950 uppercase"
+                  className="flex-1 min-w-0 border border-gray-300 px-3 py-2 text-xs sm:text-sm font-sans focus:outline-none focus:border-emerald-950 uppercase"
                 />
                 <button
                   onClick={validateCoupon}
                   disabled={couponLoading || couponApplied}
                   className={cn(
-                    'flex items-center gap-1 px-4 py-2 text-xs font-sans font-bold uppercase tracking-wider transition-colors',
+                    'shrink-0 flex items-center gap-1 px-3 sm:px-4 py-2 text-xs font-sans font-bold uppercase tracking-wider transition-colors',
                     couponApplied
                       ? 'bg-emerald-600 text-white cursor-default'
                       : 'bg-emerald-950 text-white hover:bg-emerald-900'
@@ -450,7 +450,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Totals */}
-            <div className="border-t border-gray-200 pt-4 space-y-2 text-sm font-sans">
+            <div className="border-t border-gray-200 pt-4 space-y-2 text-xs sm:text-sm font-sans">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
@@ -465,7 +465,7 @@ export default function CheckoutPage() {
                   <span>− {formatPrice(couponDiscount)}</span>
                 </div>
               )}
-              <div className="border-t border-gray-200 pt-2 flex justify-between font-bold text-emerald-950 text-base">
+              <div className="border-t border-gray-200 pt-2 flex justify-between font-bold text-emerald-950 text-sm sm:text-base">
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>
               </div>

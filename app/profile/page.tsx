@@ -163,29 +163,29 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="bg-emerald-950 py-14 px-6 text-center">
-        <p className="text-gold-400 text-xs uppercase tracking-widest font-sans mb-2">
+      <div className="bg-emerald-950 py-10 sm:py-14 px-4 sm:px-6 text-center">
+        <p className="text-gold-400 text-xs uppercase tracking-widest font-sans mb-1.5 sm:mb-2">
           Welcome back
         </p>
-        <h1 className="font-serif text-4xl text-white">{displayName}</h1>
-        <p className="text-white/50 text-sm font-sans mt-1">{user.email}</p>
+        <h1 className="font-serif text-3xl sm:text-4xl text-white">{displayName}</h1>
+        <p className="text-white/50 text-xs sm:text-sm font-sans mt-1">{user.email}</p>
       </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200 bg-white">
-        <div className="max-w-4xl mx-auto px-4 flex">
+        <div className="max-w-4xl mx-auto px-4 flex overflow-x-auto hide-scrollbar">
           {(
             [
-              { key: 'orders', icon: <Package size={16} />, label: 'Orders' },
-              { key: 'wishlist', icon: <Heart size={16} />, label: 'Wishlist' },
-              { key: 'account', icon: <User size={16} />, label: 'Account' },
+              { key: 'orders', icon: <Package size={15} />, label: 'Orders' },
+              { key: 'wishlist', icon: <Heart size={15} />, label: 'Wishlist' },
+              { key: 'account', icon: <User size={15} />, label: 'Account' },
             ] as { key: Tab; icon: React.ReactNode; label: string }[]
           ).map(({ key, icon, label }) => (
             <button
               key={key}
               onClick={() => setTab(key)}
               className={cn(
-                'flex items-center gap-2 px-6 py-4 text-xs font-sans uppercase tracking-widest border-b-2 transition-colors',
+                'flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-3.5 sm:py-4 text-[11px] sm:text-xs font-sans uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap shrink-0',
                 tab === key
                   ? 'border-gold-500 text-emerald-950 font-semibold'
                   : 'border-transparent text-gray-400 hover:text-emerald-950'
@@ -198,52 +198,52 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* ─── ORDERS TAB ─── */}
         {tab === 'orders' && (
           <div>
-            <h2 className="font-serif text-2xl text-emerald-950 mb-6">My Orders</h2>
+            <h2 className="font-serif text-xl sm:text-2xl text-emerald-950 mb-4 sm:mb-6">My Orders</h2>
             {ordersLoading ? (
               <div className="flex items-center justify-center h-40">
                 <Loader2 size={28} className="animate-spin text-gold-500" />
               </div>
             ) : orders.length === 0 ? (
-              <div className="text-center py-16">
-                <Package size={48} className="text-gray-200 mx-auto mb-4" />
-                <p className="text-gray-400 font-sans text-sm">No orders yet.</p>
+              <div className="text-center py-12 sm:py-16">
+                <Package size={44} className="text-gray-200 mx-auto mb-3 sm:mb-4" />
+                <p className="text-gray-400 font-sans text-xs sm:text-sm">No orders yet.</p>
                 <Link
                   href="/shop"
-                  className="mt-4 inline-block text-gold-600 text-xs font-sans underline"
+                  className="mt-3 sm:mt-4 inline-block text-gold-600 text-xs font-sans underline"
                 >
                   Start Shopping
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {orders.map((order) => (
-                  <div key={order.id} className="border border-gray-100 p-5">
-                    <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
+                  <div key={order.id} className="border border-gray-100 p-4 sm:p-5">
+                    <div className="flex items-start justify-between flex-wrap gap-2 sm:gap-3 mb-3 sm:mb-4">
                       <div>
-                        <p className="text-xs font-sans text-gray-400 uppercase tracking-wider mb-1">
+                        <p className="text-[10px] sm:text-xs font-sans text-gray-400 uppercase tracking-wider mb-0.5 sm:mb-1">
                           Order ID
                         </p>
-                        <p className="font-sans text-sm text-emerald-950 font-semibold break-all">
+                        <p className="font-sans text-xs sm:text-sm text-emerald-950 font-semibold break-all">
                           {order.order_id}
                         </p>
-                        <p className="text-gray-400 text-xs font-sans mt-1">
+                        <p className="text-gray-400 text-[10px] sm:text-xs font-sans mt-0.5 sm:mt-1">
                           {formatDate(order.created_at)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3">
                         <span
                           className={cn(
-                            'text-xs font-sans uppercase tracking-wider px-3 py-1',
+                            'text-[10px] sm:text-xs font-sans uppercase tracking-wider px-2.5 sm:px-3 py-1',
                             statusColor(order.status)
                           )}
                         >
                           {order.status}
                         </span>
-                        <p className="font-sans font-bold text-emerald-950 text-sm">
+                        <p className="font-sans font-bold text-emerald-950 text-xs sm:text-sm">
                           {formatPrice(order.amount)}
                         </p>
                       </div>

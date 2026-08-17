@@ -126,7 +126,7 @@ export default function HomePage() {
   return (
     <div className="bg-white">
       {/* ─── HERO ─── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[85vh] sm:min-h-[90vh] md:min-h-screen flex items-center justify-center overflow-hidden">
         <img
           src={IMAGES.heroBride}
           alt="Bridal hero"
@@ -134,12 +134,12 @@ export default function HomePage() {
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-emerald-950/70" />
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto py-20 md:py-0">
           <motion.p
-            initial={{ opacity: 0, letterSpacing: '0.3em' }}
-            animate={{ opacity: 1, letterSpacing: '0.4em' }}
+            initial={{ opacity: 0, letterSpacing: '0.2em' }}
+            animate={{ opacity: 1, letterSpacing: '0.3em' }}
             transition={{ duration: 1 }}
-            className="text-gold-400 uppercase text-sm tracking-widest mb-6 font-sans"
+            className="text-gold-400 uppercase text-xs sm:text-sm tracking-widest mb-4 sm:mb-6 font-sans"
           >
             Almas Jewels — Est. 2001
           </motion.p>
@@ -147,7 +147,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2 }}
-            className="font-serif text-4xl md:text-6xl lg:text-7xl text-white leading-tight mb-6"
+            className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-tight mb-4 sm:mb-6"
           >
             Timeless Elegance for Your Most Memorable Day
           </motion.h1>
@@ -155,7 +155,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-white/80 text-lg md:text-xl mb-10 font-sans max-w-2xl mx-auto"
+            className="text-white/80 text-sm sm:text-lg md:text-xl mb-8 sm:mb-10 font-sans max-w-2xl mx-auto leading-relaxed"
           >
             Handcrafted luxury bridal jewelry — Kundan, Polki, Meenakari & more — designed for
             the woman who deserves the extraordinary.
@@ -167,7 +167,7 @@ export default function HomePage() {
           >
             <Link
               href="/shop"
-              className="inline-block bg-gold-500 hover:bg-gold-400 text-emerald-950 font-sans font-bold uppercase tracking-widest px-10 py-4 text-sm transition-colors duration-200"
+              className="inline-block bg-gold-500 hover:bg-gold-400 text-emerald-950 font-sans font-bold uppercase tracking-widest px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm transition-colors duration-200"
             >
               Explore the Collection
             </Link>
@@ -177,19 +177,19 @@ export default function HomePage() {
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 w-px h-12 bg-gold-500/60"
+          className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 w-px h-8 sm:h-12 bg-gold-500/60"
         />
       </section>
 
       {/* ─── VALUE PROPS ─── */}
-      <section className="bg-emerald-950 py-20 px-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+      <section className="bg-emerald-950 py-14 sm:py-20 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
           {VALUE_PROPS.map((vp, i) => (
             <FadeInSection key={vp.title} delay={i * 0.15}>
               <div className="text-center">
-                <div className="flex justify-center mb-4">{vp.icon}</div>
-                <h3 className="font-serif text-xl text-white mb-3">{vp.title}</h3>
-                <p className="text-white/60 text-sm leading-relaxed font-sans">{vp.desc}</p>
+                <div className="flex justify-center mb-3 sm:mb-4">{vp.icon}</div>
+                <h3 className="font-serif text-lg sm:text-xl text-white mb-2 sm:3">{vp.title}</h3>
+                <p className="text-white/60 text-xs sm:text-sm leading-relaxed font-sans">{vp.desc}</p>
               </div>
             </FadeInSection>
           ))}
@@ -197,19 +197,19 @@ export default function HomePage() {
       </section>
 
       {/* ─── SHOP BY CATEGORY ─── */}
-      <section className="py-24 px-6 bg-white">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <FadeInSection>
-            <div className="text-center mb-16">
-              <p className="text-gold-600 uppercase tracking-widest text-xs font-sans mb-3">
+            <div className="text-center mb-10 sm:mb-16">
+              <p className="text-gold-600 uppercase tracking-widest text-xs font-sans mb-2 sm:mb-3">
                 Collections
               </p>
-              <h2 className="font-serif text-4xl md:text-5xl text-emerald-950">
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-emerald-950">
                 Shop By Category
               </h2>
             </div>
           </FadeInSection>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {CATEGORIES.map((cat, i) => (
               <FadeInSection key={cat.name} delay={i * 0.12}>
                 <Link href={cat.href} className="group block overflow-hidden">
@@ -221,9 +221,9 @@ export default function HomePage() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-emerald-950/30 group-hover:bg-emerald-950/50 transition-colors duration-300" />
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <h3 className="font-serif text-white text-xl mb-1">{cat.name}</h3>
-                      <p className="text-white/70 text-xs font-sans uppercase tracking-wider">
+                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
+                      <h3 className="font-serif text-white text-base sm:text-xl mb-0.5 sm:mb-1">{cat.name}</h3>
+                      <p className="text-white/70 text-[10px] sm:text-xs font-sans uppercase tracking-wider line-clamp-1">
                         {cat.desc}
                       </p>
                     </div>
@@ -236,15 +236,15 @@ export default function HomePage() {
       </section>
 
       {/* ─── VIDEO LOOKBOOK ─── */}
-      <section className="bg-emerald-900 py-24 px-6">
+      <section className="bg-emerald-900 py-16 sm:py-24 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <FadeInSection>
-            <div className="text-center mb-12">
-              <p className="text-gold-400 uppercase tracking-widest text-xs font-sans mb-3">
+            <div className="text-center mb-8 sm:mb-12">
+              <p className="text-gold-400 uppercase tracking-widest text-xs font-sans mb-2 sm:mb-3">
                 Experience
               </p>
-              <h2 className="font-serif text-4xl md:text-5xl text-white">The Bridal Lookbook</h2>
-              <p className="text-white/60 mt-4 font-sans text-sm max-w-lg mx-auto">
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-white">The Bridal Lookbook</h2>
+              <p className="text-white/60 mt-3 sm:mt-4 font-sans text-xs sm:text-sm max-w-lg mx-auto">
                 Watch our latest bridal collection come to life — craftsmanship, elegance, and
                 tradition captured in every frame.
               </p>
@@ -266,8 +266,8 @@ export default function HomePage() {
               />
               {!isPlaying && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-                  <div className="w-20 h-20 flex items-center justify-center bg-gold-500/90 group-hover:bg-gold-400 transition-colors">
-                    <svg className="w-8 h-8 text-emerald-950 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center bg-gold-500/90 group-hover:bg-gold-400 transition-colors">
+                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-950 ml-1" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </div>
@@ -279,8 +279,8 @@ export default function HomePage() {
       </section>
 
       {/* ─── TRUST BADGES ─── */}
-      <section className="py-16 px-6 border-y border-gray-100">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+      <section className="py-12 sm:py-16 px-4 sm:px-6 border-y border-gray-100">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10 text-center">
           {[
             {
               icon: <ShieldCheck size={28} className="text-gold-500" />,
@@ -299,7 +299,7 @@ export default function HomePage() {
             },
           ].map((b, i) => (
             <FadeInSection key={b.label} delay={i * 0.1}>
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-2 sm:gap-3">
                 {b.icon}
                 <p className="font-sans font-semibold text-emerald-950 uppercase tracking-wider text-xs">
                   {b.label}
@@ -312,31 +312,31 @@ export default function HomePage() {
       </section>
 
       {/* ─── TESTIMONIALS ─── */}
-      <section className="py-24 px-6 bg-white">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <FadeInSection>
-            <div className="text-center mb-16">
-              <p className="text-gold-600 uppercase tracking-widest text-xs font-sans mb-3">
+            <div className="text-center mb-10 sm:mb-16">
+              <p className="text-gold-600 uppercase tracking-widest text-xs font-sans mb-2 sm:mb-3">
                 Stories
               </p>
-              <h2 className="font-serif text-4xl md:text-5xl text-emerald-950">
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-emerald-950">
                 Our Brides Speak
               </h2>
             </div>
           </FadeInSection>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {TESTIMONIALS.map((t, i) => (
               <FadeInSection key={t.name} delay={i * 0.15}>
-                <div className="bg-gray-50 border border-gray-100 p-8">
-                  <Quote size={24} className="text-gold-500 mb-4" />
-                  <p className="text-gray-700 text-sm leading-relaxed font-sans mb-6 italic">
+                <div className="bg-gray-50 border border-gray-100 p-6 sm:p-8">
+                  <Quote size={20} className="text-gold-500 mb-3 sm:mb-4" />
+                  <p className="text-gray-700 text-xs sm:text-sm leading-relaxed font-sans mb-4 sm:mb-6 italic">
                     &ldquo;{t.text}&rdquo;
                   </p>
                   <div>
-                    <p className="font-sans font-semibold text-emerald-950 text-sm uppercase tracking-wider">
+                    <p className="font-sans font-semibold text-emerald-950 text-xs sm:text-sm uppercase tracking-wider">
                       {t.name}
                     </p>
-                    <p className="text-gold-600 text-xs font-sans">{t.location}</p>
+                    <p className="text-gold-600 text-[11px] sm:text-xs font-sans">{t.location}</p>
                   </div>
                 </div>
               </FadeInSection>
@@ -346,21 +346,21 @@ export default function HomePage() {
       </section>
 
       {/* ─── FINAL CTA ─── */}
-      <section className="bg-emerald-950 py-24 px-6 text-center">
+      <section className="bg-emerald-950 py-16 sm:py-24 px-4 sm:px-6 text-center">
         <FadeInSection>
-          <p className="text-gold-400 uppercase tracking-widest text-xs font-sans mb-4">
+          <p className="text-gold-400 uppercase tracking-widest text-xs font-sans mb-3 sm:mb-4">
             Begin Your Journey
           </p>
-          <h2 className="font-serif text-4xl md:text-5xl text-white mb-6">
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-white mb-4 sm:mb-6">
             Find Your Perfect Bridal Look
           </h2>
-          <p className="text-white/60 font-sans text-sm max-w-lg mx-auto mb-10">
+          <p className="text-white/60 font-sans text-xs sm:text-sm max-w-lg mx-auto mb-8 sm:mb-10">
             Every bride is unique. Explore our full collection and find the piece that tells your
             story.
           </p>
           <Link
             href="/shop"
-            className="inline-block border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-emerald-950 font-sans font-bold uppercase tracking-widest px-10 py-4 text-sm transition-colors duration-200"
+            className="inline-block border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-emerald-950 font-sans font-bold uppercase tracking-widest px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm transition-colors duration-200"
           >
             Shop the Collection
           </Link>

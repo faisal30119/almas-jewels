@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <ToastProvider>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-gray-50">
         <AdminSidebar />
         <main className="flex-1 overflow-y-auto">
           {children}
@@ -32,3 +32,4 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     </ToastProvider>
   );
 }
+

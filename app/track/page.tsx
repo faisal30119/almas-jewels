@@ -89,28 +89,28 @@ function TrackContent() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="pt-32 pb-16 px-6 md:px-16 border-b border-gray-100 text-center">
-        <p className="font-sans text-xs uppercase tracking-widest text-gold-600 mb-3">
+      <div className="pt-24 sm:pt-32 pb-10 sm:pb-16 px-4 sm:px-6 md:px-16 border-b border-gray-100 text-center">
+        <p className="font-sans text-xs uppercase tracking-widest text-gold-600 mb-2 sm:mb-3">
           Where&apos;s my order?
         </p>
-        <h1 className="font-serif text-4xl md:text-5xl text-emerald-950">Track Order</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-emerald-950">Track Order</h1>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-16">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         {/* Search form */}
-        <div className="flex gap-3 mb-12">
+        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 mb-8 sm:mb-12">
           <input
             type="text"
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && lookupOrder(inputVal)}
             placeholder="Enter your Razorpay order ID (order_…)"
-            className="flex-1 border border-gray-200 px-4 py-3 font-sans text-sm text-emerald-950 placeholder-gray-300 focus:outline-none focus:border-emerald-950"
+            className="flex-1 border border-gray-200 px-3.5 sm:px-4 py-2.5 sm:py-3 font-sans text-xs sm:text-sm text-emerald-950 placeholder-gray-300 focus:outline-none focus:border-emerald-950"
           />
           <button
             onClick={() => lookupOrder(inputVal)}
             disabled={loading}
-            className="bg-emerald-950 text-white font-sans text-xs uppercase tracking-widest px-6 py-3 hover:bg-emerald-900 transition-colors disabled:opacity-60 flex items-center gap-2"
+            className="bg-emerald-950 text-white font-sans text-xs uppercase tracking-widest px-6 py-3 hover:bg-emerald-900 transition-colors disabled:opacity-60 flex items-center justify-center gap-2 shrink-0"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Package size={14} />}
             Track
@@ -119,28 +119,28 @@ function TrackContent() {
 
         {/* Error */}
         {error && (
-          <div className="flex items-start gap-3 bg-red-50 border border-red-100 p-4 mb-8">
+          <div className="flex items-start gap-3 bg-red-50 border border-red-100 p-3.5 sm:p-4 mb-6 sm:mb-8">
             <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
-            <p className="font-sans text-sm text-red-600">{error}</p>
+            <p className="font-sans text-xs sm:text-sm text-red-600">{error}</p>
           </div>
         )}
 
         {/* Order details */}
         {order && (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Status header */}
-            <div className="border border-gray-100 p-6">
-              <div className="flex items-start justify-between mb-2">
+            <div className="border border-gray-100 p-4 sm:p-6">
+              <div className="flex items-start justify-between gap-3 mb-2 flex-wrap sm:flex-nowrap">
                 <div>
-                  <p className="text-xs font-sans uppercase tracking-widest text-gray-400 mb-1">
+                  <p className="text-[10px] sm:text-xs font-sans uppercase tracking-widest text-gray-400 mb-0.5 sm:mb-1">
                     Order ID
                   </p>
-                  <p className="font-sans text-sm font-semibold text-emerald-950 break-all">
+                  <p className="font-sans text-xs sm:text-sm font-semibold text-emerald-950 break-all">
                     {order.order_id}
                   </p>
                 </div>
                 <span
-                  className={`font-sans text-xs uppercase tracking-widest px-3 py-1 ${
+                  className={`font-sans text-[10px] sm:text-xs uppercase tracking-widest px-2.5 sm:px-3 py-1 shrink-0 ${
                     isCancelled
                       ? 'bg-red-50 text-red-500'
                       : order.status === 'Delivered'
@@ -151,7 +151,7 @@ function TrackContent() {
                   {order.status}
                 </span>
               </div>
-              <div className="flex gap-4 mt-4 text-xs font-sans text-gray-400">
+              <div className="flex gap-4 mt-3 sm:mt-4 text-xs font-sans text-gray-400">
                 <span className="flex items-center gap-1">
                   <Clock size={12} />
                   Placed {formatDate(order.created_at)}
@@ -162,8 +162,8 @@ function TrackContent() {
 
             {/* Progress stepper */}
             {!isCancelled && (
-              <div className="border border-gray-100 p-6">
-                <p className="text-xs font-sans uppercase tracking-widest text-gray-400 mb-6">
+              <div className="border border-gray-100 p-4 sm:p-6">
+                <p className="text-[10px] sm:text-xs font-sans uppercase tracking-widest text-gray-400 mb-5 sm:mb-6">
                   Order Progress
                 </p>
                 <div className="relative">
@@ -180,7 +180,7 @@ function TrackContent() {
                   />
                   <div className="relative flex justify-between">
                     {STATUS_STEPS.map((step, i) => (
-                      <div key={step} className="flex flex-col items-center gap-2">
+                      <div key={step} className="flex flex-col items-center gap-1.5 sm:gap-2">
                         <div
                           className={`w-6 h-6 flex items-center justify-center z-10 ${
                             i <= stepIdx
@@ -201,7 +201,7 @@ function TrackContent() {
                           )}
                         </div>
                         <p
-                          className={`text-center font-sans text-xs leading-tight max-w-[60px] ${
+                          className={`text-center font-sans text-[9px] sm:text-xs leading-tight max-w-[48px] sm:max-w-[65px] ${
                             i === stepIdx
                               ? 'text-emerald-950 font-semibold'
                               : i < stepIdx
@@ -220,14 +220,14 @@ function TrackContent() {
 
             {/* Shipping address */}
             {order.shipping_details?.address && (
-              <div className="border border-gray-100 p-6">
-                <div className="flex items-center gap-2 mb-4">
+              <div className="border border-gray-100 p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
                   <MapPin size={14} className="text-gold-600" />
-                  <p className="text-xs font-sans uppercase tracking-widest text-gray-400">
+                  <p className="text-[10px] sm:text-xs font-sans uppercase tracking-widest text-gray-400">
                     Shipping To
                   </p>
                 </div>
-                <p className="font-sans text-sm text-emerald-950">
+                <p className="font-sans text-xs sm:text-sm text-emerald-950 font-semibold">
                   {order.shipping_details.name ??
                     `${order.shipping_details.firstName ?? ''} ${order.shipping_details.lastName ?? ''}`.trim()}
                 </p>

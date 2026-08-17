@@ -33,16 +33,28 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
+  // Close mobile menu on route change & handle body scroll lock
   useEffect(() => {
     setMobileOpen(false);
     setUserMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
   const navBg =
-    isHome && !scrolled
+    isHome && !scrolled && !mobileOpen
       ? 'bg-transparent'
       : 'bg-[#022c22] shadow-lg';
+
 
   return (
     <header
@@ -240,10 +252,35 @@ export default function Navbar() {
                   Admin
                 </Link>
               )}
-              {!user && (
+              {user ? (
+                <div className="pt-2 border-t border-white/10 mt-1 flex flex-col gap-1">
+                  <div className="py-2 text-xs text-white/50 truncate">
+                    Signed in as <span className="text-[#D4AF37]">{user.email}</span>
+                  </div>
+                  <Link
+                    href="/profile"
+                    className="py-2.5 text-xs tracking-widest uppercase text-white/80 hover:text-[#D4AF37]"
+                  >
+                    My Profile
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="py-2.5 text-xs tracking-widest uppercase text-white/80 hover:text-[#D4AF37]"
+                  >
+                    My Orders
+                  </Link>
+                  <button
+                    onClick={() => { signOut(); setMobileOpen(false); }}
+                    className="py-2.5 text-left text-xs tracking-widest uppercase text-red-400 hover:text-red-300 flex items-center gap-2"
+                  >
+                    <LogOut size={14} />
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
                 <button
                   onClick={() => { openAuthModal('login'); setMobileOpen(false); }}
-                  className="mt-3 text-left text-xs tracking-widest uppercase text-white/70 hover:text-[#D4AF37]"
+                  className="mt-3 py-2 text-left text-xs tracking-widest uppercase text-white/70 hover:text-[#D4AF37]"
                 >
                   Sign In / Register
                 </button>

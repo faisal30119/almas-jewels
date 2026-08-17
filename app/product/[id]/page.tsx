@@ -143,27 +143,27 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
-      <div className="border-b border-gray-100 px-6 py-3">
-        <div className="max-w-6xl mx-auto flex items-center gap-2 text-xs font-sans text-gray-400">
-          <button onClick={() => router.back()} className="flex items-center gap-1 hover:text-emerald-950">
+      <div className="border-b border-gray-100 px-4 sm:px-6 py-3 overflow-x-auto hide-scrollbar">
+        <div className="max-w-6xl mx-auto flex items-center gap-2 text-xs font-sans text-gray-400 whitespace-nowrap">
+          <button onClick={() => router.back()} className="flex items-center gap-1 hover:text-emerald-950 shrink-0">
             <ChevronLeft size={14} /> Back
           </button>
           <span>/</span>
-          <Link href="/shop" className="hover:text-emerald-950">Shop</Link>
+          <Link href="/shop" className="hover:text-emerald-950 shrink-0">Shop</Link>
           <span>/</span>
-          <Link href={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-emerald-950">
+          <Link href={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-emerald-950 shrink-0">
             {product.category}
           </Link>
           <span>/</span>
-          <span className="text-emerald-950 line-clamp-1">{product.name}</span>
+          <span className="text-emerald-950 truncate max-w-[150px] sm:max-w-none">{product.name}</span>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* ─── LEFT: Gallery ─── */}
-        <div className="flex gap-4">
-          {/* Thumbnails */}
-          <div className="hidden sm:flex flex-col gap-2">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Thumbnails - Desktop/Tablet */}
+          <div className="hidden sm:flex flex-col gap-2 shrink-0">
             {images.map((img, i) => (
               <button
                 key={i}
@@ -183,62 +183,78 @@ export default function ProductPage() {
             ))}
           </div>
           {/* Main image */}
-          <div
-            className="flex-1 relative overflow-hidden bg-gray-50 cursor-zoom-in aspect-square"
-            onMouseEnter={() => setZoomed(true)}
-            onMouseLeave={() => setZoomed(false)}
-          >
-            <img
-              src={images[activeImg]}
-              alt={product.name}
-              referrerPolicy="no-referrer"
-              className={cn(
-                'w-full h-full object-cover transition-transform duration-300',
-                zoomed ? 'scale-110' : 'scale-100'
-              )}
-            />
+          <div className="flex-1 flex flex-col">
+            <div
+              className="relative overflow-hidden bg-gray-50 cursor-zoom-in aspect-square w-full"
+              onMouseEnter={() => setZoomed(true)}
+              onMouseLeave={() => setZoomed(false)}
+            >
+              <img
+                src={images[activeImg]}
+                alt={product.name}
+                referrerPolicy="no-referrer"
+                className={cn(
+                  'w-full h-full object-cover transition-transform duration-300',
+                  zoomed ? 'scale-110' : 'scale-100'
+                )}
+              />
+            </div>
+            {/* Mobile thumbnail dots/pills */}
+            <div className="flex sm:hidden justify-center items-center gap-2 mt-3">
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImg(i)}
+                  className={cn(
+                    'w-2 h-2 rounded-full transition-all',
+                    activeImg === i ? 'bg-gold-500 w-6' : 'bg-gray-300'
+                  )}
+                  aria-label={`View image ${i + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
         {/* ─── RIGHT: Details ─── */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-5 sm:gap-6">
           <div>
-            <p className="text-gold-600 text-xs font-sans uppercase tracking-widest mb-2">
+            <p className="text-gold-600 text-xs font-sans uppercase tracking-widest mb-1 sm:mb-2">
               {product.category}
             </p>
-            <h1 className="font-serif text-3xl md:text-4xl text-emerald-950 leading-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl text-emerald-950 leading-tight">
               {product.name}
             </h1>
           </div>
 
-          <div className="flex items-baseline gap-4">
-            <span className="font-serif text-3xl text-emerald-950">
+          <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
+            <span className="font-serif text-2xl sm:text-3xl text-emerald-950">
               {formatPrice(product.price)}
             </span>
-            <span className="text-gray-400 text-sm font-sans line-through">
+            <span className="text-gray-400 text-xs sm:text-sm font-sans line-through">
               {formatPrice(Math.round(product.price / 0.55))}
             </span>
-            <span className="bg-gold-500 text-emerald-950 text-xs font-sans font-bold px-2 py-0.5 uppercase">
+            <span className="bg-gold-500 text-emerald-950 text-[10px] sm:text-xs font-sans font-bold px-2 py-0.5 uppercase">
               45% OFF
             </span>
           </div>
 
-          <p className="text-gray-600 text-sm font-sans leading-relaxed">{product.description}</p>
+          <p className="text-gray-600 text-xs sm:text-sm font-sans leading-relaxed">{product.description}</p>
 
           {/* Attributes */}
-          <div className="grid grid-cols-2 gap-3 bg-gray-50 p-4">
+          <div className="grid grid-cols-2 gap-3 bg-gray-50 p-3.5 sm:p-4">
             <div>
-              <p className="text-xs font-sans uppercase tracking-wider text-gray-400 mb-1">Stone Color</p>
-              <p className="text-sm font-sans font-semibold text-emerald-950">{product.stoneColor}</p>
+              <p className="text-[10px] sm:text-xs font-sans uppercase tracking-wider text-gray-400 mb-1">Stone Color</p>
+              <p className="text-xs sm:text-sm font-sans font-semibold text-emerald-950">{product.stoneColor}</p>
             </div>
             <div>
-              <p className="text-xs font-sans uppercase tracking-wider text-gray-400 mb-1">Plating</p>
-              <p className="text-sm font-sans font-semibold text-emerald-950">{product.plating}</p>
+              <p className="text-[10px] sm:text-xs font-sans uppercase tracking-wider text-gray-400 mb-1">Plating</p>
+              <p className="text-xs sm:text-sm font-sans font-semibold text-emerald-950">{product.plating}</p>
             </div>
             {product.stock !== undefined && (
-              <div>
-                <p className="text-xs font-sans uppercase tracking-wider text-gray-400 mb-1">Stock</p>
-                <p className={cn('text-sm font-sans font-semibold', product.stock < 5 ? 'text-red-500' : 'text-emerald-600')}>
+              <div className="col-span-2 sm:col-span-1">
+                <p className="text-[10px] sm:text-xs font-sans uppercase tracking-wider text-gray-400 mb-1">Stock</p>
+                <p className={cn('text-xs sm:text-sm font-sans font-semibold', product.stock < 5 ? 'text-red-500' : 'text-emerald-600')}>
                   {product.stock < 5 ? `Only ${product.stock} left!` : 'In Stock'}
                 </p>
               </div>
@@ -251,19 +267,20 @@ export default function ProductPage() {
             <div className="flex items-center border border-gray-300">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100"
+                className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:bg-gray-200"
               >
                 −
               </button>
               <span className="w-12 text-center text-sm font-sans font-semibold">{quantity}</span>
               <button
                 onClick={() => setQuantity((q) => q + 1)}
-                className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100"
+                className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:bg-gray-200"
               >
                 +
               </button>
             </div>
           </div>
+
 
           {/* Action buttons */}
           <div className="flex gap-3">

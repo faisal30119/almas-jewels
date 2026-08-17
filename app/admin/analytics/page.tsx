@@ -38,9 +38,9 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-playfair font-bold text-gray-900 mb-6">Analytics</h1>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="p-4 sm:p-6 lg:p-8">
+        <h1 className="text-xl sm:text-2xl font-playfair font-bold text-gray-900 mb-6">Analytics</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {[1,2,3,4].map((i) => <div key={i} className="h-24 animate-pulse bg-gray-100" />)}
         </div>
         <div className="h-64 animate-pulse bg-gray-100" />
@@ -48,7 +48,7 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (!data) return <div className="p-6 text-gray-400">Failed to load analytics</div>;
+  if (!data) return <div className="p-4 sm:p-6 text-gray-400">Failed to load analytics</div>;
 
   // Weekly aggregation from daily data
   const weeklyRevenue: { week: string; revenue: number }[] = [];
@@ -59,23 +59,16 @@ export default function AnalyticsPage() {
     const key = `W${weekNum} ${date.toLocaleString('default', { month: 'short' })}`;
     weekMap[key] = (weekMap[key] ?? 0) + d.revenue;
   });
-  Object.entries(weekMap).forEach(([k, v]) => weeklyRevenue.push({ week: k, revenue: v }));
-
-  // Order status distribution (infer from chart data)
-  const pieData = [
-    { name: 'Revenue (30d)', value: data.totalRevenue },
-    { name: 'Orders (30d)', value: data.totalOrders * 1000 },
-  ];
+  Object.entries(weekMap).forEach(([week, revenue]) => weeklyRevenue.push({ week, revenue }));
 
   return (
-    <div className="p-6 max-w-[1400px]">
-      <div className="mb-6">
-        <h1 className="text-2xl font-playfair font-bold text-gray-900">Analytics</h1>
-        <p className="text-sm text-gray-500">Last 30 days performance overview</p>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-playfair font-bold text-gray-900">Analytics</h1>
+        <p className="text-xs sm:text-sm text-gray-500">Business performance metrics</p>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <KPI label="Total Revenue" value={formatPrice(data.totalRevenue)} />
         <KPI label="Total Orders" value={data.totalOrders} />
         <KPI label="Total Customers" value={data.totalCustomers} />

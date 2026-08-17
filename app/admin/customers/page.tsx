@@ -30,11 +30,12 @@ export default function CustomersPage() {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-playfair font-bold text-gray-900">Customers</h1>
-        <p className="text-sm text-gray-500">{total} registered customers</p>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-playfair font-bold text-gray-900">Customers</h1>
+        <p className="text-xs sm:text-sm text-gray-500">{total} registered customers</p>
       </div>
+
 
       <div className="relative mb-5 max-w-sm">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

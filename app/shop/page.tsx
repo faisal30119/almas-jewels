@@ -93,30 +93,54 @@ function ShopContent() {
     return list;
   }, [products, selectedCategory, selectedColor, selectedPlating, selectedPrice, sortBy]);
 
+  // Lock scroll when mobile filter sidebar is open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
+
   const displayed = filteredProducts();
   const hasFilters = !!(selectedCategory || selectedColor || selectedPlating || selectedPrice || sortBy);
 
   return (
     <div className="min-h-screen bg-white">
       {/* ─── Page header ─── */}
-      <div className="bg-emerald-950 py-16 px-6 text-center">
-        <p className="text-gold-400 uppercase tracking-widest text-xs font-sans mb-3">
+      <div className="bg-emerald-950 py-12 sm:py-16 px-4 sm:px-6 text-center">
+        <p className="text-gold-400 uppercase tracking-widest text-xs font-sans mb-2 sm:mb-3">
           The Collection
         </p>
-        <h1 className="font-serif text-4xl md:text-5xl text-white">Shop Bridal Jewelry</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-white">Shop Bridal Jewelry</h1>
       </div>
 
-      <div className="max-w-screen-xl mx-auto px-4 py-10">
-        {/* Mobile filter bar */}
-        <div className="flex items-center justify-between mb-6 lg:hidden">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="flex items-center gap-2 border border-emerald-950 px-4 py-2 text-sm font-sans uppercase tracking-wider text-emerald-950"
-          >
-            <SlidersHorizontal size={16} />
-            Filters
-          </button>
-          <p className="text-gray-500 text-sm font-sans">{displayed.length} items</p>
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        {/* Mobile filter & sort bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 lg:hidden">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="flex items-center gap-2 border border-emerald-950 px-3.5 py-2 text-xs sm:text-sm font-sans uppercase tracking-wider text-emerald-950 bg-white hover:bg-gray-50 transition-colors"
+            >
+              <SlidersHorizontal size={14} />
+              Filters {hasFilters && '•'}
+            </button>
+            <select
+              value={sortBy}
+              onChange={(e) => setFilter('sort', e.target.value)}
+              className="border border-gray-300 px-2.5 py-2 text-xs sm:text-sm font-sans bg-white text-emerald-950 focus:outline-none focus:border-emerald-950"
+            >
+              <option value="">Sort: Default</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="name">Name A-Z</option>
+            </select>
+          </div>
+          <p className="text-gray-500 text-xs sm:text-sm font-sans">{displayed.length} items</p>
         </div>
 
         <div className="flex gap-8">
@@ -140,16 +164,20 @@ function ShopContent() {
           {sidebarOpen && (
             <div className="fixed inset-0 z-50 flex lg:hidden">
               <div
-                className="absolute inset-0 bg-black/40"
+                className="absolute inset-0 bg-black/50"
                 onClick={() => setSidebarOpen(false)}
               />
-              <div className="relative bg-white w-72 h-full overflow-y-auto p-6">
-                <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-900"
-                >
-                  <X size={20} />
-                </button>
+              <div className="relative bg-white w-full max-w-xs h-full overflow-y-auto p-6 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+                  <h3 className="font-serif text-lg text-emerald-950">Filters</h3>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-1 text-gray-500 hover:text-gray-900"
+                    aria-label="Close filters"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
                 <FilterPanel
                   selectedCategory={selectedCategory}
                   selectedColor={selectedColor}
@@ -158,15 +186,19 @@ function ShopContent() {
                   sortBy={sortBy}
                   setFilter={(k, v) => {
                     setFilter(k, v);
-                    setSidebarOpen(false);
                   }}
                   clearFilters={() => {
                     clearFilters();
-                    setSidebarOpen(false);
                   }}
                   hasFilters={hasFilters}
                   count={displayed.length}
                 />
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="w-full mt-8 bg-emerald-950 text-white font-sans text-xs uppercase tracking-widest py-3 hover:bg-emerald-900 transition-colors"
+                >
+                  View Results ({displayed.length})
+                </button>
               </div>
             </div>
           )}
@@ -188,7 +220,7 @@ function ShopContent() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                 {displayed.map((product) => {
                   const oldPrice = stableOldPrice(product.id, product.price);
                   const discount = discountPct(product.price, oldPrice);

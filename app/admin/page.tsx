@@ -111,26 +111,27 @@ export default function AdminDashboard() {
   const monthMax = analytics?.topProductsMonth[0]?.qty ?? 1;
 
   return (
-    <div className="p-6 max-w-[1400px]">
-      <div className="mb-6">
-        <h1 className="text-2xl font-playfair font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Welcome back — here&apos;s an overview of Almas Jewels</p>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-playfair font-bold text-gray-900">Dashboard</h1>
+        <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Welcome back — here&apos;s an overview of Almas Jewels</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         {kpis.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-white border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-gray-500 uppercase tracking-widest font-medium">{label}</span>
+          <div key={label} className="bg-white border border-gray-200 p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[11px] sm:text-xs text-gray-500 uppercase tracking-widest font-medium">{label}</span>
               <Icon size={18} className={color} />
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {loading ? <span className="animate-pulse text-gray-300">•••</span> : value}
             </div>
           </div>
         ))}
       </div>
+
 
       {/* Revenue Chart */}
       <div className="bg-white border border-gray-200 p-5 mb-6">

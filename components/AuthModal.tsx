@@ -110,12 +110,12 @@ export default function AuthModal() {
           >
             <div className="bg-white w-full max-w-md relative">
               {/* Header bar */}
-              <div className="bg-[#022c22] px-8 py-6 flex items-center justify-between">
+              <div className="bg-[#022c22] px-5 sm:px-8 py-5 sm:py-6 flex items-center justify-between">
                 <div>
-                  <p className="text-[#D4AF37] text-xs tracking-widest uppercase font-sans mb-1">
+                  <p className="text-[#D4AF37] text-[10px] sm:text-xs tracking-widest uppercase font-sans mb-1">
                     Almas Jewels
                   </p>
-                  <h2 className="text-white font-serif text-xl font-semibold">
+                  <h2 className="text-white font-serif text-lg sm:text-xl font-semibold">
                     {mode === 'login' && 'Welcome Back'}
                     {mode === 'register' && 'Create Account'}
                     {mode === 'forgot' && 'Reset Password'}
@@ -123,13 +123,14 @@ export default function AuthModal() {
                 </div>
                 <button
                   onClick={closeAuthModal}
-                  className="text-white/60 hover:text-white transition-colors"
+                  className="text-white/60 hover:text-white transition-colors p-1"
+                  aria-label="Close"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <div className="px-8 py-8">
+              <div className="px-5 sm:px-8 py-6 sm:py-8">
                 {/* Google sign-in (not on forgot mode) */}
                 {mode !== 'forgot' && (
                   <button

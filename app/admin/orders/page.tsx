@@ -98,16 +98,17 @@ export default function OrdersPage() {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-playfair font-bold text-gray-900">Orders</h1>
-          <p className="text-sm text-gray-500">{total} total orders</p>
+          <h1 className="text-xl sm:text-2xl font-playfair font-bold text-gray-900">Orders</h1>
+          <p className="text-xs sm:text-sm text-gray-500">{total} total orders</p>
         </div>
-        <button onClick={exportCSV} className="flex items-center gap-2 border border-gray-200 text-gray-700 text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-gray-50">
+        <button onClick={exportCSV} className="self-start sm:self-auto flex items-center gap-2 border border-gray-200 text-gray-700 text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-gray-50 bg-white">
           <Download size={14} /> Export CSV
         </button>
       </div>
+
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-5">
